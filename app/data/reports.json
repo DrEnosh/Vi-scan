@@ -1,0 +1,198 @@
+[
+  {
+    "report_id": "R-1001", "patient_id": "P001", "modality": "OPG", "study_date": "2025-11-03",
+    "region": "Full mouth", "reported_by": "Dr. K. Iyer (synthetic)", "status": "final",
+    "findings": [
+      {"id": "F1", "site": "48", "category": "impaction", "present": true, "text": "Horizontally impacted."},
+      {"id": "F2", "site": "48", "category": "canal_proximity", "present": true, "text": "Root apices superimposed on the mandibular canal with interruption of the canal's superior cortical outline."},
+      {"id": "F3", "site": "38", "category": "impaction", "present": true, "text": "Mesioangular impaction, partially erupted."},
+      {"id": "F4", "site": "36", "category": "caries", "present": true, "text": "Occlusal caries extending into dentin."},
+      {"id": "F5", "site": "generalized", "category": "periapical", "present": false, "text": "No periapical pathology detected."}
+    ],
+    "impression": "Bilaterally impacted mandibular third molars; 48 shows radiographic signs of close relation to the mandibular canal. Occlusal caries in 36.",
+    "recommendation": "CBCT of the 48 region before surgical planning. Clinical correlation for 36."
+  },
+  {
+    "report_id": "R-1002", "patient_id": "P001", "modality": "IOPA", "study_date": "2026-02-18",
+    "region": "Tooth 36", "reported_by": "Dr. K. Iyer (synthetic)", "status": "final",
+    "findings": [
+      {"id": "F1", "site": "36", "category": "caries", "present": true, "text": "Deep distal caries approaching the pulp horn."},
+      {"id": "F2", "site": "36", "category": "periapical", "present": false, "text": "No periapical radiolucency; lamina dura intact."}
+    ],
+    "impression": "Deep caries in 36 approaching the pulp.",
+    "recommendation": "Pulp vitality testing advised."
+  },
+  {
+    "report_id": "R-1003", "patient_id": "P001", "modality": "OPG", "study_date": "2026-08-21",
+    "region": "Full mouth", "reported_by": "Dr. K. Iyer (synthetic)", "status": "final",
+    "findings": [
+      {"id": "F1", "site": "36", "category": "rct", "present": true, "text": "Root canal treated with adequate obturation length and density; coronal restoration in place."},
+      {"id": "F2", "site": "36", "category": "periapical", "present": false, "text": "No periapical radiolucency."},
+      {"id": "F3", "site": "48", "category": "impaction", "present": true, "text": "Horizontal impaction, position unchanged from the OPG dated 2025-11-03."},
+      {"id": "F4", "site": "38", "category": "impaction", "present": true, "text": "Mesioangular impaction, partially erupted; unchanged."},
+      {"id": "F5", "site": "generalized", "category": "bone_loss", "present": true, "text": "Generalized mild horizontal alveolar bone loss."}
+    ],
+    "impression": "Post-endodontic follow-up of 36 satisfactory. Impacted 38 and 48 unchanged. Mild generalized horizontal bone loss.",
+    "recommendation": "Periodontal evaluation. Surgical consultation for 48 as previously advised."
+  },
+  {
+    "report_id": "R-1004", "patient_id": "P001", "modality": "CBCT", "study_date": "2026-09-02",
+    "region": "Right posterior mandible (48 region)", "reported_by": "Dr. S. Bhat (synthetic)", "status": "final",
+    "findings": [
+      {"id": "F1", "site": "48", "category": "impaction", "present": true, "text": "Horizontally impacted, crown in contact with the distal root of 47."},
+      {"id": "F2", "site": "48", "category": "canal_proximity", "present": true, "text": "Inferior alveolar canal runs lingual to the roots and is in direct contact with the apical third, with thinning of the canal cortex."},
+      {"id": "F3", "site": "47", "category": "root_resorption", "present": false, "text": "No resorption of the distal root of 47."}
+    ],
+    "impression": "Horizontally impacted 48 in direct contact with the inferior alveolar canal. No root resorption of 47.",
+    "recommendation": "Refer to oral and maxillofacial surgery; discuss inferior alveolar nerve risk before extraction."
+  },
+  {
+    "report_id": "R-2001", "patient_id": "P002", "modality": "OPG", "study_date": "2026-01-12",
+    "region": "Full mouth", "reported_by": "Dr. K. Iyer (synthetic)", "status": "final",
+    "findings": [
+      {"id": "F1", "site": "46", "category": "missing", "present": true, "text": "Missing, with mesial tipping of 47 into the edentulous space."},
+      {"id": "F2", "site": "15", "category": "restoration", "present": true, "text": "Occlusal radiopaque restoration with intact margins."},
+      {"id": "F3", "site": "lower anteriors", "category": "calculus", "present": true, "text": "Subgingival calculus deposits in the lower anterior region."}
+    ],
+    "impression": "Missing 46 with tipping of 47. Calculus in the lower anterior region.",
+    "recommendation": "Prosthetic planning for the 46 space; oral prophylaxis."
+  },
+  {
+    "report_id": "R-2002", "patient_id": "P002", "modality": "BITEWING", "study_date": "2026-06-30",
+    "region": "Right posterior bitewing", "reported_by": "Dr. K. Iyer (synthetic)", "status": "final",
+    "findings": [
+      {"id": "F1", "site": "15", "category": "caries", "present": true, "text": "Incipient distal proximal caries limited to enamel."},
+      {"id": "F2", "site": "16", "category": "caries", "present": true, "text": "Mesial proximal caries extending into the outer third of dentin."},
+      {"id": "F3", "site": "generalized", "category": "bone_loss", "present": false, "text": "Crestal bone levels within normal limits."}
+    ],
+    "impression": "Proximal caries in 15 (enamel) and 16 (dentin).",
+    "recommendation": "Restorative management of 16; preventive care and review for 15."
+  },
+  {
+    "report_id": "R-3001", "patient_id": "P003", "modality": "OPG", "study_date": "2025-07-09",
+    "region": "Full mouth", "reported_by": "Dr. S. Bhat (synthetic)", "status": "final",
+    "findings": [
+      {"id": "F1", "site": "46", "category": "root_stump", "present": true, "text": "Residual roots."},
+      {"id": "F2", "site": "46", "category": "periapical", "present": true, "text": "Periapical radiolucency around the mesial root, approximately 4 mm."},
+      {"id": "F3", "site": "generalized", "category": "bone_loss", "present": true, "text": "Generalized moderate horizontal bone loss."},
+      {"id": "F4", "site": "21", "category": "crown", "present": true, "text": "Metal-ceramic crown in place."}
+    ],
+    "impression": "Residual roots of 46 with periapical radiolucency. Generalized moderate bone loss.",
+    "recommendation": "Extraction of the 46 residual roots; periodontal evaluation."
+  },
+  {
+    "report_id": "R-3002", "patient_id": "P003", "modality": "IOPA", "study_date": "2026-05-20",
+    "region": "Tooth 46 region", "reported_by": "Dr. S. Bhat (synthetic)", "status": "final",
+    "findings": [
+      {"id": "F1", "site": "46", "category": "missing", "present": true, "text": "Healing extraction socket with early trabecular fill."},
+      {"id": "F2", "site": "45", "category": "periapical", "present": false, "text": "No periapical changes in 45 or 47."}
+    ],
+    "impression": "Healing extraction socket at 46.",
+    "recommendation": "Implant planning after socket healing; CBCT advised."
+  },
+  {
+    "report_id": "R-4001", "patient_id": "P004", "modality": "OPG", "study_date": "2026-03-05",
+    "region": "Full mouth", "reported_by": "Dr. K. Iyer (synthetic)", "status": "final",
+    "findings": [
+      {"id": "F1", "site": "38", "category": "impaction", "present": true, "text": "Vertical impaction, unerupted."},
+      {"id": "F2", "site": "48", "category": "impaction", "present": true, "text": "Mesioangular impaction, unerupted."},
+      {"id": "F3", "site": "generalized", "category": "caries", "present": false, "text": "No radiographically detectable caries."},
+      {"id": "F4", "site": "generalized", "category": "periapical", "present": false, "text": "No periapical lesions."}
+    ],
+    "impression": "Impacted 38 (vertical) and 48 (mesioangular).",
+    "recommendation": "Monitor; surgical opinion if symptomatic."
+  },
+  {
+    "report_id": "R-4002", "patient_id": "P004", "modality": "LATERAL_CEPH", "study_date": "2026-03-05",
+    "region": "Skull, lateral view", "reported_by": "Dr. K. Iyer (synthetic)", "status": "final",
+    "findings": [
+      {"id": "F1", "site": "skeletal", "category": "other", "present": true, "text": "Skeletal Class II pattern (ANB 6 degrees)."},
+      {"id": "F2", "site": "upper incisors", "category": "other", "present": true, "text": "Proclined upper incisors."}
+    ],
+    "impression": "Skeletal Class II tendency with proclined upper incisors.",
+    "recommendation": "Orthodontic consultation."
+  },
+  {
+    "report_id": "R-5001", "patient_id": "P005", "modality": "OPG", "study_date": "2025-12-01",
+    "region": "Full mouth", "reported_by": "Dr. S. Bhat (synthetic)", "status": "final",
+    "findings": [
+      {"id": "F1", "site": "36", "category": "implant", "present": true, "text": "Endosseous implant with crown; crestal bone level stable."},
+      {"id": "F2", "site": "46", "category": "missing", "present": true, "text": "Missing."},
+      {"id": "F3", "site": "generalized", "category": "bone_loss", "present": true, "text": "Generalized moderate horizontal bone loss with a vertical defect distal to 47."},
+      {"id": "F4", "site": "right maxillary sinus", "category": "sinus_thickening", "present": true, "text": "Mild mucosal thickening in the floor of the right maxillary sinus."}
+    ],
+    "impression": "Implant at 36 stable. Missing 46. Generalized moderate bone loss. Mild right maxillary sinus mucosal thickening.",
+    "recommendation": "CBCT for 46 implant planning; periodontal management."
+  },
+  {
+    "report_id": "R-5002", "patient_id": "P005", "modality": "CBCT", "study_date": "2026-04-10",
+    "region": "Edentulous 46 site", "reported_by": "Dr. S. Bhat (synthetic)", "status": "final",
+    "findings": [
+      {"id": "F1", "site": "46", "category": "missing", "present": true, "text": "Edentulous site; residual ridge width about 6.5 mm, bone height above the canal about 11 mm."},
+      {"id": "F2", "site": "47", "category": "bone_loss", "present": true, "text": "Vertical bone defect on the distal aspect."}
+    ],
+    "impression": "Adequate bone volume at 46 for a standard-diameter implant.",
+    "recommendation": "Guided implant planning for 46."
+  },
+  {
+    "report_id": "R-6001", "patient_id": "P006", "modality": "OPG", "study_date": "2026-07-07",
+    "region": "Full mouth", "reported_by": "Dr. K. Iyer (synthetic)", "status": "final",
+    "findings": [
+      {"id": "F1", "site": "26", "category": "rct", "present": true, "text": "Root canal treated; obturation short of the apex in the mesiobuccal root."},
+      {"id": "F2", "site": "26", "category": "periapical", "present": true, "text": "Periapical radiolucency around the mesiobuccal root."},
+      {"id": "F3", "site": "left maxillary sinus", "category": "sinus_thickening", "present": true, "text": "Mucosal thickening in the sinus floor adjacent to the roots of 26."}
+    ],
+    "impression": "Inadequately obturated 26 with periapical radiolucency and adjacent sinus mucosal thickening.",
+    "recommendation": "Endodontic re-evaluation of 26."
+  },
+  {
+    "report_id": "R-6002", "patient_id": "P006", "modality": "IOPA", "study_date": "2026-07-15",
+    "region": "Tooth 26", "reported_by": "Dr. K. Iyer (synthetic)", "status": "final",
+    "findings": [
+      {"id": "F1", "site": "26", "category": "rct", "present": true, "text": "Short obturation in the mesiobuccal canal; a second mesiobuccal canal may be untreated."},
+      {"id": "F2", "site": "26", "category": "periapical", "present": true, "text": "Well-defined periapical radiolucency at the mesiobuccal root apex, approximately 3 mm."}
+    ],
+    "impression": "Persistent periapical lesion at 26 with short obturation.",
+    "recommendation": "Endodontic retreatment; CBCT if a second mesiobuccal canal is suspected clinically."
+  },
+  {
+    "report_id": "R-7001", "patient_id": "P007", "modality": "OPG", "study_date": "2026-02-02",
+    "region": "Full mouth (mixed dentition)", "reported_by": "Dr. S. Bhat (synthetic)", "status": "final",
+    "findings": [
+      {"id": "F1", "site": "75", "category": "caries", "present": true, "text": "Deep distal caries approaching the pulp."},
+      {"id": "F2", "site": "35", "category": "unerupted", "present": true, "text": "Developing successor beneath 75; crown formation complete."},
+      {"id": "F3", "site": "generalized", "category": "other", "present": true, "text": "Mixed dentition consistent with age."}
+    ],
+    "impression": "Deep caries in 75. Developing 35 present.",
+    "recommendation": "Clinical evaluation of 75."
+  },
+  {
+    "report_id": "R-7002", "patient_id": "P007", "modality": "IOPA", "study_date": "2026-02-10",
+    "region": "Tooth 75", "reported_by": "Dr. S. Bhat (synthetic)", "status": "final",
+    "findings": [
+      {"id": "F1", "site": "75", "category": "radiolucency", "present": true, "text": "Inter-radicular (furcation) radiolucency."},
+      {"id": "F2", "site": "35", "category": "unerupted", "present": true, "text": "Successor present; root formation not started."}
+    ],
+    "impression": "Furcation radiolucency in 75 with a developing successor.",
+    "recommendation": "Pulpectomy or extraction of 75 based on clinical findings; consider a space maintainer if extracted."
+  },
+  {
+    "report_id": "R-8001", "patient_id": "P008", "modality": "OPG", "study_date": "2026-05-05",
+    "region": "Full mouth", "reported_by": "Dr. M. Gowda (synthetic)", "status": "final",
+    "findings": [
+      {"id": "F1", "site": "17", "category": "caries", "present": true, "text": "Occlusal caries."},
+      {"id": "F2", "site": "generalized", "category": "bone_loss", "present": true, "text": "Generalized mild bone loss."}
+    ],
+    "impression": "Caries in 17. Mild generalized bone loss.",
+    "recommendation": "Restorative care of 17."
+  },
+  {
+    "report_id": "R-8002", "patient_id": "P008", "modality": "IOPA", "study_date": "2026-05-12",
+    "region": "Tooth 17", "reported_by": "Dr. M. Gowda (synthetic)", "status": "final",
+    "findings": [
+      {"id": "F1", "site": "17", "category": "caries", "present": true, "text": "Occlusal caries extending into dentin; pulp not involved."}
+    ],
+    "impression": "Dentinal caries in 17.",
+    "recommendation": "Composite restoration of 17."
+  }
+]

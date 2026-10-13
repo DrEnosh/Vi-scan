@@ -1,0 +1,11 @@
+[
+  {"patient_id": "P001", "name": "Priya Sharma", "sex": "F", "dob": "1992-03-14", "clinic_id": "BLR-01"},
+  {"patient_id": "P002", "name": "Priya Shetty", "sex": "F", "dob": "1997-07-02", "clinic_id": "BLR-01"},
+  {"patient_id": "P003", "name": "Rahul Menon", "sex": "M", "dob": "1985-01-22", "clinic_id": "BLR-01"},
+  {"patient_id": "P004", "name": "Arjun Nair", "sex": "M", "dob": "2003-05-09", "clinic_id": "BLR-01"},
+  {"patient_id": "P005", "name": "Fatima Khan", "sex": "F", "dob": "1974-10-30", "clinic_id": "BLR-01"},
+  {"patient_id": "P006", "name": "Ananya Rao", "sex": "F", "dob": "1995-04-18", "clinic_id": "BLR-01"},
+  {"patient_id": "P007", "name": "Anaya Rao", "sex": "F", "dob": "2018-06-11", "clinic_id": "BLR-01"},
+  {"patient_id": "P008", "name": "Priya Shah", "sex": "F", "dob": "1981-09-05", "clinic_id": "MYS-02"},
+  {"patient_id": "P009", "name": "Kiran Das", "sex": "M", "dob": "1966-02-27", "clinic_id": "BLR-01"}
+]

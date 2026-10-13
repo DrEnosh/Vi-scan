@@ -1,0 +1,8 @@
+{
+  "_comment": "Mock STT lookup used when STT_PROVIDER=mock. Maps an uploaded audio file name to the transcript a real STT engine would return. Lets tests and demos exercise the voice path without a paid API.",
+  "open_priya_latest_opg.wav": "Open Priya's latest OPG report",
+  "open_priya_sharma_latest_opg.wav": "Open Priya Sharma's latest OPG report",
+  "summarize_her_report.wav": "Summarize her report",
+  "dictation_48_impacted.wav": "Lower right third molar is horizontally impacted",
+  "dictation_multi.wav": "Lower right third molar is horizontally impacted with roots close to the mandibular canal. Possible caries on 46. No periapical radiolucency in relation to 36."
+}

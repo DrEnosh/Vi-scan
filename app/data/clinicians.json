@@ -1,0 +1,4 @@
+{
+  "dr_demo": {"name": "Dr. Demo Clinician (synthetic)", "clinic_ids": ["BLR-01"]},
+  "dr_mysuru": {"name": "Dr. Mysuru Clinician (synthetic)", "clinic_ids": ["MYS-02"]}
+}

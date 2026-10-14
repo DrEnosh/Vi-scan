@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import re
 
-from ..dental import categories_in_question, find_findings, find_sites
+from ..dental import categories_in_question, find_findings, find_sites, question_term_spans
 from .schema import InterpretContext, ToolCall
 
 DICTATE_PREFIX_RE = re.compile(r"^\s*(?:dictate|dictation|findings?|note)\s*[:\-]", re.I)
@@ -15,13 +15,19 @@ COMMAND_START_RE = re.compile(
     r"^\s*(?:(?:hey|ok|okay)\s+\w+[,\s]+)?(?:please\s+|can\s+you\s+|could\s+you\s+|would\s+you\s+|"
     r"i\s+(?:want|need|would\s+like|wanna)\s+(?:to\s+)?|let(?:'s|\s+me|\s+us)\s+)?(?:take\s+a\s+)?"
     r"(?P<verb>open|show|display|pull|get|fetch|find|bring|load|retrieve|view|see|summari[sz]e|give|read|"
-    r"look|what|what's|whats|does|did|do|is|are|was|were|any|has|have|had|tell|list|check|which|how|where|when)\b",
+    r"look|what|what's|whats|does|did|do|is|are|was|were|any|has|have|had|tell|list|check|which|how|where|when|"
+    r"should|shall|must)\b",
     re.I)
 SUMMARY_RE = re.compile(r"\bsummar(?:y|ies|ise|ize|ised|ized|ising|izing)\b|\bbrief\s+me\b|\boverview\b|\bgist\b|\brecap\b", re.I)
 QUESTION_VERBS = {"what", "what's", "whats", "does", "did", "do", "is", "are", "was", "were", "any", "has", "have",
-                  "had", "tell", "which", "how", "where", "when", "check", "list"}
+                  "had", "tell", "which", "how", "where", "when", "check", "list", "should", "shall", "must"}
 OPEN_VERBS = {"open", "show", "display", "pull", "get", "fetch", "find", "bring", "load", "retrieve", "view", "see",
               "give", "read", "look"}
+BROAD_RE = re.compile(r"\banything\s+(?:concerning|abnormal|wrong|important|significant|notable|serious|unusual|"
+                      r"worrying)\b|\bany\s+(?:concerns?|issues?|problems?|abnormalit(?:y|ies)|red\s+flags?)\b|"
+                      r"\b(?:key|main)\s+findings\b|\bwhat\s+are\s+the\s+findings\b|"
+                      r"\bexplain\s+(?:the\s+|her\s+|his\s+|their\s+)?(?:findings|report|scan|results?)\b|"
+                      r"\bwhat\s+(?:was|were)\s+(?:found|seen|noted)\b", re.I)
 FIELD_RE = re.compile(r"\bimpression\b|\brecommend\w*|\badvi[cs]\w*|\bnext\s+steps?\b|\bconclusion\b", re.I)
 REPORT_WORD_RE = re.compile(r"\breports?\b|\bscans?\b|\bx-?rays?\b|\bradiographs?\b|\bstud(?:y|ies)\b|\bimages?\b|\bfilms?\b", re.I)
 
@@ -64,6 +70,27 @@ something anything everything all some side tooth teeth s recommended recommenda
 impression advice advised advise plan next step steps conclusion treatment suggested suggest suggestion seen noted
 written documented reported mentioned there's anything else more details detail mr mrs ms miss master madam sir
 look looking took taken done we us our at need want
+be been being am isn't aren't wasn't doesn't didn't don't hasn't haven't no not nor yes so if then than why who whom
+whose whether here these those still already yet very really quite much many less least other another each every
+either both such own only even ever never always maybe perhaps probably possibly should shall must might got gets
+getting doing going gone seem seems seemed looks looked appear appears appeared know knows think mean means sure
+right alright hello hi good great fine well
+serious severe mild moderate bad worse better worst best normal abnormal abnormality abnormalities healthy unhealthy
+concerning concern concerns concerned worrying worried worry urgent urgently important significant notable unusual
+issue issues problem problems wrong red flag flags diagnosis diagnoses diagnosed diagnostic prognosis radiologist
+radiologists radiology surgeon specialist opinion cancer cancers cancerous tumor tumour tumors tumours malignancy
+malignant benign growth growths mass masses lump oral mouth jaw jaws bone bones infection infected infections
+inflammation inflamed pain painful swelling swollen evidence sign signs symptom symptoms extraction extractions
+extract removal remove removed surgery surgical treat treated treating needed needs level levels condition conditions
+progress progression change changes changed compared compare comparison since time times ago today yesterday week
+weeks month months year years old new visit visits appointment appointments slot slots book booking schedule
+mesioangular distoangular horizontal horizontally vertical vertically angulation angle position positioned erupted
+erupting partially fully completely impacted diabetes diabetic hypertension allergy allergies medical history health
+risk risks key main overall general generally possible probable likely unlikely suspect suspected suspicious
+suggestive suggests query questionable doubtful equivocal indeterminate cannot rule exclude excluded certain uncertain
+out off over under down picture idea check checked checking found clear clean close closer near nearby stable
+unchanged due follow explain explained upper lower left front back molar molars premolar premolars incisor incisors
+canine canines arch arches maxilla maxillary mandible mandibular quadrant quadrants
 """.split())
 
 
@@ -113,6 +140,7 @@ def extract_name(text: str, extra_masks: list[tuple[int, int]] | None = None) ->
     spans += [m.span() for m in PATIENT_ID_RE.finditer(text)]
     spans += [(f.start, f.end) for f in find_findings(text)]
     spans += [(s.start, s.end) for s in find_sites(text)]
+    spans += question_term_spans(text)
     for a, b in spans:
         for i in range(a, b):
             masked[i] = " "
@@ -143,10 +171,20 @@ def _patient_args(text: str, masks: list[tuple[int, int]]) -> dict[str, object]:
     return {"patient_reference": "none"}
 
 
+def first_pronoun(text: str) -> tuple[str, int] | None:
+    """The earliest patient pronoun in the text, as (patient_reference, character position)."""
+    hits = [(m.start(), ref) for ref, rx in (("pronoun_female", PRONOUN_F), ("pronoun_male", PRONOUN_M),
+                                             ("pronoun_neutral", PRONOUN_N)) if (m := rx.search(text))]
+    if not hits:
+        return None
+    pos, ref = min(hits)
+    return ref, pos
+
+
 def looks_like_dictation(text: str) -> bool:
     if DICTATE_PREFIX_RE.search(text):
         return True
-    if COMMAND_START_RE.search(text):
+    if COMMAND_START_RE.search(text) or text.rstrip().endswith("?"):  # a question is never dictation
         return False
     return bool(find_findings(text) or find_sites(text))
 
@@ -174,9 +212,12 @@ class RuleBasedInterpreter:
                           or FIELD_RE.search(text))
         is_question = (verb in QUESTION_VERBS) or text.rstrip().endswith("?")
 
-        if SUMMARY_RE.search(text):
+        if SUMMARY_RE.search(text) or (BROAD_RE.search(text) and not has_target):
             intent = "summarize_report"
         elif is_question and has_target:
+            intent = "answer_report_question"
+        elif FIELD_RE.search(text) and verb in ("read", "give", "show", "tell", "display", "get") \
+                and report_args["modality"] == "ANY":
             intent = "answer_report_question"
         elif verb in OPEN_VERBS or (is_question and (REPORT_WORD_RE.search(text) or report_args["modality"] != "ANY")):
             intent = "open_report"

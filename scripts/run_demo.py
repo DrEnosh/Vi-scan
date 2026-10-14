@@ -130,11 +130,14 @@ def main() -> None:
     lines.append("Full summary text returned in `message`:\n")
     lines.append("```text\n" + r["message"] + "\n```\n")
 
-    section("4. Grounded question about something the report does not contain",
+    section("4. Grounded questions, including ones the report can't answer",
             "R-1003 has no caries finding, so the answer says so and points to the reports that do, "
-            "rather than saying yes or no.")
+            "rather than saying yes or no. A question about something the report doesn't cover (a tumour) is "
+            "neither confirmed nor denied, and a treatment question gets the report's own recommendation, quoted.")
     say(client, "Does she have any caries?", sid)
     say(client, "What about 48?", sid)
+    say(client, "Does she have a tumour?", sid)
+    say(client, "Does she need an extraction?", sid)
 
     section("5. Pronoun that doesn't fit the open patient", "\"his\" while a female patient is open triggers a question.")
     say(client, "Summarize his report", sid)
@@ -162,8 +165,8 @@ def main() -> None:
     record(client, "POST", f"/api/drafts/{did}/approve")
 
     section("9. Voice path: audio upload -> STT -> same pipeline",
-            "With `STT_PROVIDER=mock` the sample file name maps to a fixed transcript; with `STT_PROVIDER=openai` the "
-            "same endpoint sends the audio to the transcription API. The `stt` step appears first in the trace.")
+            "With `STT_PROVIDER=mock` the sample file name maps to a fixed transcript; with `STT_PROVIDER=groq` the "
+            "same endpoint sends the audio to Whisper (see `docs/LIVE_RUN.md`). The `stt` step appears first in the trace.")
     record(client, "POST", "/api/assistant/voice", files={"audio": ("dictation_multi.wav", b"RIFF-demo", "audio/wav")},
            form={"mode": "auto"})
 

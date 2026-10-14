@@ -38,7 +38,11 @@ class OpenAICompatInterpreter:
         if client is None:
             if not api_key:
                 raise LLMInterpreterError(f"API key for '{provider}' is not set")
-            from openai import OpenAI  # lazy: optional dependency
+            try:
+                from openai import OpenAI  # lazy: optional dependency
+            except ImportError as e:
+                raise LLMInterpreterError("The 'openai' package is not installed. "
+                                          "Run: pip install -r requirements-providers.txt") from e
 
             # No SDK retries: on a rate limit or error we fall back to the rule-based interpreter
             # immediately instead of making a clinician wait for a retry.

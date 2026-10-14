@@ -16,7 +16,7 @@ HTTP 200
 
 ```json
 {
-  "session_id": "000c5145f7dd441d",
+  "session_id": "4254a33008244fec",
   "type": "clarification",
   "message": "I found 2 patients matching \"Priya\". Which one do you mean? You can say the full name or the patient ID.",
   "data": {
@@ -42,11 +42,11 @@ HTTP 200
   },
   "trace": [
     "input",
-    "interpret (0.67 ms) -> {\"engine\": \"rule_based\", \"tool\": \"open_report\", \"args\": {\"modality\": \"OPG\", \"which\": \"latest\", \"patient_name\": \"priya\", \"patient_reference\": \"named\"}}",
-    "validate (0.74 ms) -> {\"ok\": true, \"tool\": \"open_report\"}",
-    "tool:find_patient (0.56 ms) -> {\"by\": \"name\", \"query\": \"priya\", \"status\": \"ambiguous\", \"method\": \"partial\", \"candidates\": [\"P001\", \"P002\"]}"
+    "interpret (0.39 ms) -> {\"engine\": \"rule_based\", \"tool\": \"open_report\", \"args\": {\"modality\": \"OPG\", \"which\": \"latest\", \"patient_name\": \"priya\", \"patient_reference\": \"named\"}}",
+    "validate (0.19 ms) -> {\"ok\": true, \"tool\": \"open_report\"}",
+    "tool:find_patient (0.31 ms) -> {\"by\": \"name\", \"query\": \"priya\", \"status\": \"ambiguous\", \"method\": \"partial\", \"candidates\": [\"P001\", \"P002\"]}"
   ],
-  "total_ms": 2.27
+  "total_ms": 1.04
 }
 ```
 
@@ -56,13 +56,13 @@ HTTP 200
 The answer "Priya Sharma" resolves the pending question and the original intent (latest OPG) runs. Note the look-alike name alert.
 
 ```bash
-curl -s -X POST localhost:8000/api/assistant/message -H 'X-Clinician-Id: dr_demo' -H 'Content-Type: application/json' -d '{"text": "Priya Sharma", "session_id": "000c5145f7dd441d"}'
+curl -s -X POST localhost:8000/api/assistant/message -H 'X-Clinician-Id: dr_demo' -H 'Content-Type: application/json' -d '{"text": "Priya Sharma", "session_id": "4254a33008244fec"}'
 ```
 HTTP 200
 
 ```json
 {
-  "session_id": "000c5145f7dd441d",
+  "session_id": "4254a33008244fec",
   "type": "report",
   "message": "Opened Priya Sharma (P001) - OPG dated 2026-08-21 (R-1003).",
   "warnings": [
@@ -105,12 +105,12 @@ HTTP 200
   },
   "trace": [
     "input",
-    "clarification (1.01 ms) -> {\"result\": \"resolved\", \"patient_id\": \"P001\", \"how\": \"name\"}",
-    "validate (0.07 ms) -> {\"ok\": true, \"tool\": \"open_report\"}",
+    "clarification (0.53 ms) -> {\"result\": \"resolved\", \"patient_id\": \"P001\", \"how\": \"name\"}",
+    "validate (0.03 ms) -> {\"ok\": true, \"tool\": \"open_report\"}",
     "tool:find_patient (0.01 ms) -> {\"by\": \"id\", \"query\": \"P001\", \"found\": true}",
-    "tool:get_report (0.02 ms) -> {\"patient_id\": \"P001\", \"modality\": \"OPG\", \"which\": \"latest\", \"date\": null, \"result\": \"R-1003\"}"
+    "tool:get_report (0.01 ms) -> {\"patient_id\": \"P001\", \"modality\": \"OPG\", \"which\": \"latest\", \"date\": null, \"result\": \"R-1003\"}"
   ],
-  "total_ms": 1.98
+  "total_ms": 0.92
 }
 ```
 
@@ -120,13 +120,13 @@ HTTP 200
 "her" resolves from session context (see `context_check` in the trace). The summary is extractive: every line is copied from a report field and keeps its finding ID.
 
 ```bash
-curl -s -X POST localhost:8000/api/assistant/message -H 'X-Clinician-Id: dr_demo' -H 'Content-Type: application/json' -d '{"text": "Summarize her report", "session_id": "000c5145f7dd441d"}'
+curl -s -X POST localhost:8000/api/assistant/message -H 'X-Clinician-Id: dr_demo' -H 'Content-Type: application/json' -d '{"text": "Summarize her report", "session_id": "4254a33008244fec"}'
 ```
 HTTP 200
 
 ```json
 {
-  "session_id": "000c5145f7dd441d",
+  "session_id": "4254a33008244fec",
   "type": "summary",
   "message": "Priya Sharma (P001) - OPG dated 2026-08-21 (R-1003)\nKey findings:\n- Tooth 36: Root canal treated with adequate obturation length and density; coronal restoration in place. [F1]\n- Tooth 48: Horizontal impaction, position unchanged from the OPG dated 2025-11-03. [F3]\n- Tooth 38: Mesioangular impaction, partially erupted; unchanged. [F4]\n- Generalized: Generalized mild horizontal alveolar bone loss. [F5]\nDocumented as not seen:\n- Tooth 36: No periapical radiolucency. [F2]\nImpression (as reported): Post-endodontic follow-up of 36 satisfactory. Impacted 38 and 48 unchanged. Mild generalized horizontal bone loss.\nRecommendation (as reported): Periodontal evaluation. Surgical consultation for 48 as previously advised.",
   "evidence": [
@@ -155,12 +155,12 @@ HTTP 200
   },
   "trace": [
     "input",
-    "interpret (0.28 ms) -> {\"engine\": \"rule_based\", \"tool\": \"summarize_report\", \"args\": {\"modality\": \"ANY\", \"which\": \"latest\", \"patient_reference\": \"pronoun_female\"}}",
-    "validate (0.03 ms) -> {\"ok\": true, \"tool\": \"summarize_report\"}",
+    "interpret (0.15 ms) -> {\"engine\": \"rule_based\", \"tool\": \"summarize_report\", \"args\": {\"modality\": \"ANY\", \"which\": \"latest\", \"patient_reference\": \"pronoun_female\"}}",
+    "validate (0.01 ms) -> {\"ok\": true, \"tool\": \"summarize_report\"}",
     "context_check (0.01 ms) -> {\"result\": \"resolved_from_session\", \"patient_id\": \"P001\", \"reference\": \"pronoun_female\"}",
-    "tool:summarize_report (0.13 ms) -> {\"patient_id\": \"P001\", \"report_id\": \"R-1003\", \"method\": \"extractive\"}"
+    "tool:summarize_report (0.03 ms) -> {\"patient_id\": \"P001\", \"report_id\": \"R-1003\", \"method\": \"extractive\"}"
   ],
-  "total_ms": 0.79
+  "total_ms": 0.36
 }
 ```
 
@@ -180,18 +180,18 @@ Recommendation (as reported): Periodontal evaluation. Surgical consultation for 
 ```
 
 
-## 4. Grounded question about something the report does not contain
+## 4. Grounded questions, including ones the report can't answer
 
-R-1003 has no caries finding, so the answer says so and points to the reports that do, rather than saying yes or no.
+R-1003 has no caries finding, so the answer says so and points to the reports that do, rather than saying yes or no. A question about something the report doesn't cover (a tumour) is neither confirmed nor denied, and a treatment question gets the report's own recommendation, quoted.
 
 ```bash
-curl -s -X POST localhost:8000/api/assistant/message -H 'X-Clinician-Id: dr_demo' -H 'Content-Type: application/json' -d '{"text": "Does she have any caries?", "session_id": "000c5145f7dd441d"}'
+curl -s -X POST localhost:8000/api/assistant/message -H 'X-Clinician-Id: dr_demo' -H 'Content-Type: application/json' -d '{"text": "Does she have any caries?", "session_id": "4254a33008244fec"}'
 ```
 HTTP 200
 
 ```json
 {
-  "session_id": "000c5145f7dd441d",
+  "session_id": "4254a33008244fec",
   "type": "answer",
   "message": "R-1003 (OPG, 2026-08-21) does not mention caries. I can't confirm or rule it out from this report.\nOther reports on file that mention it: R-1002, R-1001. Ask me to open one to review it.",
   "evidence": [
@@ -215,23 +215,23 @@ HTTP 200
   },
   "trace": [
     "input",
-    "interpret (0.3 ms) -> {\"engine\": \"rule_based\", \"tool\": \"answer_report_question\", \"args\": {\"question\": \"Does she have any caries?\", \"patient_reference\": \"pronoun_female\"}}",
-    "validate (0.11 ms) -> {\"ok\": true, \"tool\": \"answer_report_question\"}",
-    "context_check (0.02 ms) -> {\"result\": \"resolved_from_session\", \"patient_id\": \"P001\", \"reference\": \"pronoun_female\"}",
-    "tool:answer_from_report (0.29 ms) -> {\"report_id\": \"R-1003\", \"matched_findings\": [], \"fields\": [], \"outcome\": \"answer\"}"
+    "interpret (0.17 ms) -> {\"engine\": \"rule_based\", \"tool\": \"answer_report_question\", \"args\": {\"question\": \"Does she have any caries?\", \"patient_reference\": \"pronoun_female\"}}",
+    "validate (0.02 ms) -> {\"ok\": true, \"tool\": \"answer_report_question\"}",
+    "context_check (0.01 ms) -> {\"result\": \"resolved_from_session\", \"patient_id\": \"P001\", \"reference\": \"pronoun_female\"}",
+    "tool:answer_from_report (0.13 ms) -> {\"report_id\": \"R-1003\", \"matched_findings\": [], \"fields\": [], \"outcome\": \"answer\"}"
   ],
-  "total_ms": 1.01
+  "total_ms": 0.48
 }
 ```
 
 ```bash
-curl -s -X POST localhost:8000/api/assistant/message -H 'X-Clinician-Id: dr_demo' -H 'Content-Type: application/json' -d '{"text": "What about 48?", "session_id": "000c5145f7dd441d"}'
+curl -s -X POST localhost:8000/api/assistant/message -H 'X-Clinician-Id: dr_demo' -H 'Content-Type: application/json' -d '{"text": "What about 48?", "session_id": "4254a33008244fec"}'
 ```
 HTTP 200
 
 ```json
 {
-  "session_id": "000c5145f7dd441d",
+  "session_id": "4254a33008244fec",
   "type": "answer",
   "message": "R-1003 (OPG, 2026-08-21) documents, for tooth 48:\n- Tooth 48: Horizontal impaction, position unchanged from the OPG dated 2025-11-03. [F3]",
   "warnings": [
@@ -262,12 +262,86 @@ HTTP 200
   },
   "trace": [
     "input",
-    "interpret (0.36 ms) -> {\"engine\": \"rule_based\", \"tool\": \"answer_report_question\", \"args\": {\"question\": \"What about 48?\", \"patient_reference\": \"none\"}}",
-    "validate (0.04 ms) -> {\"ok\": true, \"tool\": \"answer_report_question\"}",
-    "context_check (0.02 ms) -> {\"result\": \"no_name_given_using_open_patient\", \"patient_id\": \"P001\"}",
-    "tool:answer_from_report (0.15 ms) -> {\"report_id\": \"R-1003\", \"matched_findings\": [\"F3\"], \"fields\": [], \"outcome\": \"answer\"}"
+    "interpret (0.17 ms) -> {\"engine\": \"rule_based\", \"tool\": \"answer_report_question\", \"args\": {\"question\": \"What about 48?\", \"patient_reference\": \"none\"}}",
+    "validate (0.02 ms) -> {\"ok\": true, \"tool\": \"answer_report_question\"}",
+    "context_check (0.01 ms) -> {\"result\": \"no_name_given_using_open_patient\", \"patient_id\": \"P001\"}",
+    "tool:answer_from_report (0.06 ms) -> {\"report_id\": \"R-1003\", \"matched_findings\": [\"F3\"], \"fields\": [], \"outcome\": \"answer\"}"
   ],
-  "total_ms": 0.85
+  "total_ms": 0.4
+}
+```
+
+```bash
+curl -s -X POST localhost:8000/api/assistant/message -H 'X-Clinician-Id: dr_demo' -H 'Content-Type: application/json' -d '{"text": "Does she have a tumour?", "session_id": "4254a33008244fec"}'
+```
+HTTP 200
+
+```json
+{
+  "session_id": "4254a33008244fec",
+  "type": "unsupported",
+  "message": "I can only answer from what R-1003 (OPG, 2026-08-21) documents, so I can't confirm or rule that out. Ask about a tooth (\"what about 48?\"), a finding (\"any caries?\"), the impression or the recommendation.",
+  "data": {
+    "patient": {
+      "patient_id": "P001",
+      "name": "Priya Sharma",
+      "age": 34,
+      "sex": "F"
+    },
+    "report_id": "R-1003",
+    "matched_findings": [],
+    "fields": []
+  },
+  "trace": [
+    "input",
+    "interpret (0.19 ms) -> {\"engine\": \"rule_based\", \"tool\": \"answer_report_question\", \"args\": {\"question\": \"Does she have a tumour?\", \"patient_reference\": \"pronoun_female\"}}",
+    "validate (0.02 ms) -> {\"ok\": true, \"tool\": \"answer_report_question\"}",
+    "context_check (0.01 ms) -> {\"result\": \"resolved_from_session\", \"patient_id\": \"P001\", \"reference\": \"pronoun_female\"}",
+    "tool:answer_from_report (0.06 ms) -> {\"report_id\": \"R-1003\", \"matched_findings\": [], \"fields\": [], \"outcome\": \"unsupported\"}"
+  ],
+  "total_ms": 0.41
+}
+```
+
+```bash
+curl -s -X POST localhost:8000/api/assistant/message -H 'X-Clinician-Id: dr_demo' -H 'Content-Type: application/json' -d '{"text": "Does she need an extraction?", "session_id": "4254a33008244fec"}'
+```
+HTTP 200
+
+```json
+{
+  "session_id": "4254a33008244fec",
+  "type": "answer",
+  "message": "Recommendation in R-1003 (OPG, 2026-08-21): Periodontal evaluation. Surgical consultation for 48 as previously advised.",
+  "evidence": [
+    {
+      "source": "report",
+      "report_id": "R-1003",
+      "finding_ids": [],
+      "quote": "recommendation"
+    }
+  ],
+  "data": {
+    "patient": {
+      "patient_id": "P001",
+      "name": "Priya Sharma",
+      "age": 34,
+      "sex": "F"
+    },
+    "report_id": "R-1003",
+    "matched_findings": [],
+    "fields": [
+      "recommendation"
+    ]
+  },
+  "trace": [
+    "input",
+    "interpret (0.17 ms) -> {\"engine\": \"rule_based\", \"tool\": \"answer_report_question\", \"args\": {\"question\": \"Does she need an extraction?\", \"patient_reference\": \"pronoun_female\"}}",
+    "validate (0.02 ms) -> {\"ok\": true, \"tool\": \"answer_report_question\"}",
+    "context_check (0.01 ms) -> {\"result\": \"resolved_from_session\", \"patient_id\": \"P001\", \"reference\": \"pronoun_female\"}",
+    "tool:answer_from_report (0.06 ms) -> {\"report_id\": \"R-1003\", \"matched_findings\": [], \"fields\": [\"recommendation\"], \"outcome\": \"answer\"}"
+  ],
+  "total_ms": 0.43
 }
 ```
 
@@ -277,13 +351,13 @@ HTTP 200
 "his" while a female patient is open triggers a question.
 
 ```bash
-curl -s -X POST localhost:8000/api/assistant/message -H 'X-Clinician-Id: dr_demo' -H 'Content-Type: application/json' -d '{"text": "Summarize his report", "session_id": "000c5145f7dd441d"}'
+curl -s -X POST localhost:8000/api/assistant/message -H 'X-Clinician-Id: dr_demo' -H 'Content-Type: application/json' -d '{"text": "Summarize his report", "session_id": "4254a33008244fec"}'
 ```
 HTTP 200
 
 ```json
 {
-  "session_id": "000c5145f7dd441d",
+  "session_id": "4254a33008244fec",
   "type": "clarification",
   "message": "You said \"his\", but the patient open now is Priya Sharma (P001, female). Which patient do you mean?",
   "data": {
@@ -292,29 +366,29 @@ HTTP 200
   },
   "trace": [
     "input",
-    "interpret (0.25 ms) -> {\"engine\": \"rule_based\", \"tool\": \"summarize_report\", \"args\": {\"modality\": \"ANY\", \"which\": \"latest\", \"patient_reference\": \"pronoun_male\"}}",
-    "validate (0.03 ms) -> {\"ok\": true, \"tool\": \"summarize_report\"}",
-    "context_check (0.02 ms) -> {\"result\": \"pronoun_mismatch\", \"active_patient\": \"P001\"}"
+    "interpret (0.15 ms) -> {\"engine\": \"rule_based\", \"tool\": \"summarize_report\", \"args\": {\"modality\": \"ANY\", \"which\": \"latest\", \"patient_reference\": \"pronoun_male\"}}",
+    "validate (0.02 ms) -> {\"ok\": true, \"tool\": \"summarize_report\"}",
+    "context_check (0.01 ms) -> {\"result\": \"pronoun_mismatch\", \"active_patient\": \"P001\"}"
   ],
-  "total_ms": 0.43
+  "total_ms": 0.25
 }
 ```
 
 ```bash
-curl -s -X POST localhost:8000/api/assistant/message -H 'X-Clinician-Id: dr_demo' -H 'Content-Type: application/json' -d '{"text": "cancel", "session_id": "000c5145f7dd441d"}'
+curl -s -X POST localhost:8000/api/assistant/message -H 'X-Clinician-Id: dr_demo' -H 'Content-Type: application/json' -d '{"text": "cancel", "session_id": "4254a33008244fec"}'
 ```
 HTTP 200
 
 ```json
 {
-  "session_id": "000c5145f7dd441d",
+  "session_id": "4254a33008244fec",
   "type": "cancelled",
   "message": "Okay, cancelled. Nothing was opened.",
   "trace": [
     "input",
-    "clarification (0.01 ms) -> {\"result\": \"cancelled\"}"
+    "clarification (0.0 ms) -> {\"result\": \"cancelled\"}"
   ],
-  "total_ms": 0.1
+  "total_ms": 0.04
 }
 ```
 
@@ -330,15 +404,15 @@ HTTP 200
 
 ```json
 {
-  "session_id": "c5c126b149744ac8",
+  "session_id": "fb07daf9789a46c4",
   "type": "draft_report",
-  "message": "Draft DR-3EA1C182 created with 1 finding(s). Clinician review is required before use.",
+  "message": "Draft DR-6E44DC1F created with 1 finding(s). Clinician review is required before use.",
   "warnings": [
     "No patient linked. Open or name a patient before sign-off."
   ],
   "evidence": "1 transcript quote(s)",
   "data": {
-    "draft_id": "DR-3EA1C182",
+    "draft_id": "DR-6E44DC1F",
     "status": "draft_pending_review",
     "version": 1,
     "extraction_engine": "rule_parser",
@@ -375,11 +449,11 @@ HTTP 200
   },
   "trace": [
     "input",
-    "interpret (0.19 ms) -> {\"engine\": \"rule_based\", \"tool\": \"draft_findings\", \"args\": {}}",
-    "validate (0.05 ms) -> {\"ok\": true, \"tool\": \"draft_findings\"}",
-    "tool:draft_findings (0.59 ms) -> {\"engine\": \"rule_parser\", \"accepted\": 1, \"rejected\": 0, \"added_from_rules\": 0, \"unparsed\": 0, \"needs_review\": 0}"
+    "interpret (0.06 ms) -> {\"engine\": \"rule_based\", \"tool\": \"draft_findings\", \"args\": {}}",
+    "validate (0.02 ms) -> {\"ok\": true, \"tool\": \"draft_findings\"}",
+    "tool:draft_findings (0.32 ms) -> {\"engine\": \"rule_parser\", \"accepted\": 1, \"rejected\": 0, \"added_from_rules\": 0, \"unparsed\": 0, \"needs_review\": 0}"
   ],
-  "total_ms": 1.41
+  "total_ms": 0.69
 }
 ```
 
@@ -395,15 +469,15 @@ HTTP 200
 
 ```json
 {
-  "session_id": "d01890c2f936438f",
+  "session_id": "4bfee762eefc478f",
   "type": "draft_report",
-  "message": "Draft DR-2B020CED created with 3 finding(s), 2 flagged for review. Clinician review is required before use.",
+  "message": "Draft DR-C93A6455 created with 3 finding(s), 2 flagged for review. Clinician review is required before use.",
   "warnings": [
     "No patient linked. Open or name a patient before sign-off."
   ],
   "evidence": "3 transcript quote(s)",
   "data": {
-    "draft_id": "DR-2B020CED",
+    "draft_id": "DR-C93A6455",
     "status": "draft_pending_review",
     "version": 1,
     "extraction_engine": "rule_parser",
@@ -476,10 +550,10 @@ HTTP 200
   "trace": [
     "input",
     "interpret (0.01 ms) -> {\"engine\": \"rule_based\", \"tool\": \"draft_findings\", \"args\": {}}",
-    "validate (0.03 ms) -> {\"ok\": true, \"tool\": \"draft_findings\"}",
-    "tool:draft_findings (0.91 ms) -> {\"engine\": \"rule_parser\", \"accepted\": 3, \"rejected\": 0, \"added_from_rules\": 0, \"unparsed\": 1, \"needs_review\": 2}"
+    "validate (0.02 ms) -> {\"ok\": true, \"tool\": \"draft_findings\"}",
+    "tool:draft_findings (0.52 ms) -> {\"engine\": \"rule_parser\", \"accepted\": 3, \"rejected\": 0, \"added_from_rules\": 0, \"unparsed\": 1, \"needs_review\": 2}"
   ],
-  "total_ms": 1.39
+  "total_ms": 0.77
 }
 ```
 
@@ -489,7 +563,7 @@ HTTP 200
 Approval is blocked while no patient is linked or a tooth is unresolved.
 
 ```bash
-curl -s -X POST localhost:8000/api/drafts/DR-2B020CED/approve -H 'X-Clinician-Id: dr_demo'
+curl -s -X POST localhost:8000/api/drafts/DR-C93A6455/approve -H 'X-Clinician-Id: dr_demo'
 ```
 HTTP 409
 
@@ -503,13 +577,13 @@ HTTP 409
 ```
 
 ```bash
-curl -s -X PUT localhost:8000/api/drafts/DR-2B020CED -H 'X-Clinician-Id: dr_demo' -H 'Content-Type: application/json' -d '{"patient_id": "P001", "findings": [{"finding_id": "D1", "category": "impaction", "qualifiers": ["horizontal"], "present": true, "certainty": "stated", "tooth_fdi": "48"}, {"finding_id": "D2", "category": "caries", "present": true, "certainty": "uncertain", "tooth_fdi": "46"}, {"finding_id": "D3", "category": "periapical", "present": false, "certainty": "stated", "tooth_fdi": "36"}]}'
+curl -s -X PUT localhost:8000/api/drafts/DR-C93A6455 -H 'X-Clinician-Id: dr_demo' -H 'Content-Type: application/json' -d '{"patient_id": "P001", "findings": [{"finding_id": "D1", "category": "impaction", "qualifiers": ["horizontal"], "present": true, "certainty": "stated", "tooth_fdi": "48"}, {"finding_id": "D2", "category": "caries", "present": true, "certainty": "uncertain", "tooth_fdi": "46"}, {"finding_id": "D3", "category": "periapical", "present": false, "certainty": "stated", "tooth_fdi": "36"}]}'
 ```
 HTTP 200
 
 ```json
 {
-  "draft_id": "DR-2B020CED",
+  "draft_id": "DR-C93A6455",
   "status": "edited_pending_review",
   "version": 2,
   "extraction_engine": "rule_parser",
@@ -582,13 +656,13 @@ HTTP 200
 ```
 
 ```bash
-curl -s -X POST localhost:8000/api/drafts/DR-2B020CED/approve -H 'X-Clinician-Id: dr_demo'
+curl -s -X POST localhost:8000/api/drafts/DR-C93A6455/approve -H 'X-Clinician-Id: dr_demo'
 ```
 HTTP 200
 
 ```json
 {
-  "draft_id": "DR-2B020CED",
+  "draft_id": "DR-C93A6455",
   "status": "clinician_approved",
   "version": 2,
   "extraction_engine": "rule_parser",
@@ -663,7 +737,7 @@ HTTP 200
 
 ## 9. Voice path: audio upload -> STT -> same pipeline
 
-With `STT_PROVIDER=mock` the sample file name maps to a fixed transcript; with `STT_PROVIDER=openai` the same endpoint sends the audio to the transcription API. The `stt` step appears first in the trace.
+With `STT_PROVIDER=mock` the sample file name maps to a fixed transcript; with `STT_PROVIDER=groq` the same endpoint sends the audio to Whisper (see `docs/LIVE_RUN.md`). The `stt` step appears first in the trace.
 
 ```bash
 curl -s -X POST localhost:8000/api/assistant/voice -H 'X-Clinician-Id: dr_demo' -F 'audio=@samples/dictation_multi.wav;type=audio/wav' -F 'mode=auto'
@@ -672,16 +746,16 @@ HTTP 200
 
 ```json
 {
-  "session_id": "00babe432b1a4435",
+  "session_id": "3ffd9c2d02fe41ba",
   "type": "draft_report",
-  "message": "Draft DR-29394268 created with 4 finding(s), 1 flagged for review. Clinician review is required before use.",
+  "message": "Draft DR-46D19D27 created with 4 finding(s), 1 flagged for review. Clinician review is required before use.",
   "transcript": "Lower right third molar is horizontally impacted with roots close to the mandibular canal. Possible caries on 46. No periapical radiolucency in relation to 36.",
   "warnings": [
     "No patient linked. Open or name a patient before sign-off."
   ],
   "evidence": "4 transcript quote(s)",
   "data": {
-    "draft_id": "DR-29394268",
+    "draft_id": "DR-46D19D27",
     "status": "draft_pending_review",
     "version": 1,
     "extraction_engine": "rule_parser",
@@ -761,13 +835,13 @@ HTTP 200
     ]
   },
   "trace": [
-    "stt (0.06 ms) -> {\"provider\": \"mock\", \"bytes\": 9}",
+    "stt (0.03 ms) -> {\"provider\": \"mock\", \"bytes\": 9}",
     "input",
-    "interpret (0.44 ms) -> {\"engine\": \"rule_based\", \"tool\": \"draft_findings\", \"args\": {}}",
-    "validate (0.06 ms) -> {\"ok\": true, \"tool\": \"draft_findings\"}",
-    "tool:draft_findings (1.15 ms) -> {\"engine\": \"rule_parser\", \"accepted\": 4, \"rejected\": 0, \"added_from_rules\": 0, \"unparsed\": 0, \"needs_review\": 1}"
+    "interpret (0.13 ms) -> {\"engine\": \"rule_based\", \"tool\": \"draft_findings\", \"args\": {}}",
+    "validate (0.02 ms) -> {\"ok\": true, \"tool\": \"draft_findings\"}",
+    "tool:draft_findings (0.54 ms) -> {\"engine\": \"rule_parser\", \"accepted\": 4, \"rejected\": 0, \"added_from_rules\": 0, \"unparsed\": 0, \"needs_review\": 1}"
   ],
-  "total_ms": 2.23
+  "total_ms": 0.88
 }
 ```
 
@@ -781,7 +855,7 @@ HTTP 200
 
 ```json
 {
-  "session_id": "b729797098264efc",
+  "session_id": "fbcd8b8c6711485e",
   "type": "not_found",
   "message": "Arjun Nair (P004): No CBCT report is on file for this patient. Available: OPG 2026-03-05 (R-4001); Lateral ceph 2026-03-05 (R-4002).",
   "data": {
@@ -806,12 +880,12 @@ HTTP 200
   },
   "trace": [
     "input",
-    "interpret (0.28 ms) -> {\"engine\": \"rule_based\", \"tool\": \"open_report\", \"args\": {\"modality\": \"CBCT\", \"which\": \"latest\", \"patient_name\": \"arjun nair\", \"patient_reference\": \"named\"}}",
-    "validate (0.04 ms) -> {\"ok\": true, \"tool\": \"open_report\"}",
-    "tool:find_patient (0.65 ms) -> {\"by\": \"name\", \"query\": \"arjun nair\", \"status\": \"resolved\", \"method\": \"exact\", \"candidates\": [\"P004\"]}",
-    "tool:get_report (0.02 ms) -> {\"patient_id\": \"P004\", \"modality\": \"CBCT\", \"which\": \"latest\", \"date\": null, \"result\": null}"
+    "interpret (0.18 ms) -> {\"engine\": \"rule_based\", \"tool\": \"open_report\", \"args\": {\"modality\": \"CBCT\", \"which\": \"latest\", \"patient_name\": \"arjun nair\", \"patient_reference\": \"named\"}}",
+    "validate (0.02 ms) -> {\"ok\": true, \"tool\": \"open_report\"}",
+    "tool:find_patient (0.33 ms) -> {\"by\": \"name\", \"query\": \"arjun nair\", \"status\": \"resolved\", \"method\": \"exact\", \"candidates\": [\"P004\"]}",
+    "tool:get_report (0.01 ms) -> {\"patient_id\": \"P004\", \"modality\": \"CBCT\", \"which\": \"latest\", \"date\": null, \"result\": null}"
   ],
-  "total_ms": 1.36
+  "total_ms": 0.73
 }
 ```
 
@@ -824,7 +898,7 @@ HTTP 200
 
 ```json
 {
-  "session_id": "089b316cbdea4c9b",
+  "session_id": "84c1513047744c23",
   "type": "clarification",
   "message": "I couldn't find an exact match for \"Priya Shah\". Did you mean Priya Sharma (P001)?",
   "data": {
@@ -842,11 +916,11 @@ HTTP 200
   },
   "trace": [
     "input",
-    "interpret (0.27 ms) -> {\"engine\": \"rule_based\", \"tool\": \"open_report\", \"args\": {\"modality\": \"OPG\", \"which\": \"latest\", \"patient_name\": \"priya shah\", \"patient_reference\": \"named\"}}",
-    "validate (0.03 ms) -> {\"ok\": true, \"tool\": \"open_report\"}",
-    "tool:find_patient (0.7 ms) -> {\"by\": \"name\", \"query\": \"priya shah\", \"status\": \"needs_confirmation\", \"method\": \"fuzzy\", \"candidates\": [\"P001\"]}"
+    "interpret (0.19 ms) -> {\"engine\": \"rule_based\", \"tool\": \"open_report\", \"args\": {\"modality\": \"OPG\", \"which\": \"latest\", \"patient_name\": \"priya shah\", \"patient_reference\": \"named\"}}",
+    "validate (0.02 ms) -> {\"ok\": true, \"tool\": \"open_report\"}",
+    "tool:find_patient (0.34 ms) -> {\"by\": \"name\", \"query\": \"priya shah\", \"status\": \"needs_confirmation\", \"method\": \"fuzzy\", \"candidates\": [\"P001\"]}"
   ],
-  "total_ms": 1.31
+  "total_ms": 0.64
 }
 ```
 
@@ -857,7 +931,7 @@ HTTP 200
 
 ```json
 {
-  "session_id": "f7d02db500c343dd",
+  "session_id": "ad5e419b89ab43a1",
   "type": "report",
   "message": "Opened Priya Shah (P008) - OPG dated 2026-05-05 (R-8001).",
   "evidence": [
@@ -891,12 +965,12 @@ HTTP 200
   },
   "trace": [
     "input",
-    "interpret (0.44 ms) -> {\"engine\": \"rule_based\", \"tool\": \"open_report\", \"args\": {\"modality\": \"OPG\", \"which\": \"latest\", \"patient_name\": \"priya shah\", \"patient_reference\": \"named\"}}",
-    "validate (0.04 ms) -> {\"ok\": true, \"tool\": \"open_report\"}",
-    "tool:find_patient (0.03 ms) -> {\"by\": \"name\", \"query\": \"priya shah\", \"status\": \"resolved\", \"method\": \"exact\", \"candidates\": [\"P008\"]}",
+    "interpret (0.15 ms) -> {\"engine\": \"rule_based\", \"tool\": \"open_report\", \"args\": {\"modality\": \"OPG\", \"which\": \"latest\", \"patient_name\": \"priya shah\", \"patient_reference\": \"named\"}}",
+    "validate (0.02 ms) -> {\"ok\": true, \"tool\": \"open_report\"}",
+    "tool:find_patient (0.01 ms) -> {\"by\": \"name\", \"query\": \"priya shah\", \"status\": \"resolved\", \"method\": \"exact\", \"candidates\": [\"P008\"]}",
     "tool:get_report (0.01 ms) -> {\"patient_id\": \"P008\", \"modality\": \"OPG\", \"which\": \"latest\", \"date\": null, \"result\": \"R-8001\"}"
   ],
-  "total_ms": 0.91
+  "total_ms": 0.38
 }
 ```
 
@@ -952,16 +1026,16 @@ HTTP 200
 
 ```json
 {
-  "session_id": "42e1b2ec06874ef8",
+  "session_id": "e5d359ddb0414cea",
   "type": "draft_report",
-  "message": "Draft DR-F9FD8D0D created with 1 finding(s). Clinician review is required before use.",
+  "message": "Draft DR-0D49EBF8 created with 1 finding(s). Clinician review is required before use.",
   "warnings": [
     "No patient linked. Open or name a patient before sign-off.",
     "3 proposed finding(s) were rejected as unsupported by the transcript."
   ],
   "evidence": "1 transcript quote(s)",
   "data": {
-    "draft_id": "DR-F9FD8D0D",
+    "draft_id": "DR-0D49EBF8",
     "status": "draft_pending_review",
     "version": 1,
     "extraction_engine": "llm+grounding",
@@ -1029,11 +1103,11 @@ HTTP 200
   },
   "trace": [
     "input",
-    "interpret (0.13 ms) -> {\"engine\": \"scripted-llm\", \"tool\": \"draft_findings\", \"args\": {\"findings\": [{\"category\": \"impaction\", \"qualifiers\": [\"horizontal\"], \"tooth_fdi\": \"48\", \"present\": true, \"certainty\": \"stated\", \"evidence\": \"Lower right third molar is horizontally impacted\"}, {\"category\": \"caries\", \"tooth_fdi\": \"46\", \"present\": true, \"certainty\": \"stated\", \"evidence\": \"46 shows deep caries\"}, {\"category\": \"canal_proximity\", \"tooth_fdi\": \"48\", \"present\": true, \"certainty\": \"stated\", \"evidence\": \"Lower right third molar is horizontally impacted\"}, {\"category\": \"impaction\", \"tooth_fdi\": \"38\", \"present\": true, \"certainty\": \"stated\", \"evidence\": \"Lower right third molar is horizontally impacted\"}]}, \"usage\": {\"model\": \"openai/gpt-oss-120b\", \"input_tokens\": 861, \"cached_tokens\": 0, \"output_tokens\": 210, \"est_cost_usd\": 0.0}}",
-    "validate (0.05 ms) -> {\"ok\": true, \"tool\": \"draft_findings\"}",
-    "tool:draft_findings (1.49 ms) -> {\"engine\": \"llm+grounding\", \"accepted\": 1, \"rejected\": 3, \"added_from_rules\": 0, \"unparsed\": 0, \"needs_review\": 0}"
+    "interpret (0.04 ms) -> {\"engine\": \"scripted-llm\", \"tool\": \"draft_findings\", \"args\": {\"findings\": [{\"category\": \"impaction\", \"qualifiers\": [\"horizontal\"], \"tooth_fdi\": \"48\", \"present\": true, \"certainty\": \"stated\", \"evidence\": \"Lower right third molar is horizontally impacted\"}, {\"category\": \"caries\", \"tooth_fdi\": \"46\", \"present\": true, \"certainty\": \"stated\", \"evidence\": \"46 shows deep caries\"}, {\"category\": \"canal_proximity\", \"tooth_fdi\": \"48\", \"present\": true, \"certainty\": \"stated\", \"evidence\": \"Lower right third molar is horizontally impacted\"}, {\"category\": \"impaction\", \"tooth_fdi\": \"38\", \"present\": true, \"certainty\": \"stated\", \"evidence\": \"Lower right third molar is horizontally impacted\"}]}, \"usage\": {\"model\": \"openai/gpt-oss-120b\", \"input_tokens\": 861, \"cached_tokens\": 0, \"output_tokens\": 210, \"est_cost_usd\": 0.0}}",
+    "validate (0.02 ms) -> {\"ok\": true, \"tool\": \"draft_findings\"}",
+    "tool:draft_findings (0.52 ms) -> {\"engine\": \"llm+grounding\", \"accepted\": 1, \"rejected\": 3, \"added_from_rules\": 0, \"unparsed\": 0, \"needs_review\": 0}"
   ],
-  "total_ms": 2.35
+  "total_ms": 0.79
 }
 ```
 

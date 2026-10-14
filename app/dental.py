@@ -366,6 +366,8 @@ _QUESTION_SYNONYMS: list[tuple[re.Pattern[str], tuple[str, ...]]] = [
     (_p(r"\bsinus\b|\bantrum\b"), ("sinus_thickening", "sinus_opacification")),
     (_p(r"\bfillings?\b|\brestorations?\b"), ("restoration",)),
     (_p(r"\bperiodont\w*|\bgums?\b"), ("bone_loss", "calculus")),
+    (_p(r"\bbone\s+(?:levels?|height|support)\b"), ("bone_loss",)),
+    (_p(r"\bcrowns?\b"), ("crown",)),
     (_p(r"\bimpact\w*|\bwisdom\b"), ("impaction",)),
     (_p(r"\bradiolucen\w*"), ("radiolucency", "periapical")),
 ]
@@ -398,6 +400,11 @@ def qualifiers_in(defn: FindingDef, text: str) -> list[str]:
     if _NO_CHANGE_RE.search(text) or re.search(r"\bunchanged\b|\bstable\b", text, re.I):
         quals.append("unchanged")
     return quals
+
+
+def question_term_spans(text: str) -> list[tuple[int, int]]:
+    """Character spans of question-only vocabulary ("lesions", "nerve", "wisdom"), so it is never read as a name."""
+    return [m.span() for rx, _ in _QUESTION_SYNONYMS for m in rx.finditer(text)]
 
 
 def categories_in_question(text: str) -> set[str]:

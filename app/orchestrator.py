@@ -19,7 +19,9 @@ from datetime import datetime, timezone
 from typing import Any
 
 from .interpreter import InterpretContext, RuleBasedInterpreter, ToolCall
-from .interpreter.rule_based import extract_name, looks_like_command, looks_like_dictation
+from .interpreter.rule_based import (
+    PRONOUN_F, PRONOUN_M, extract_name, first_pronoun, looks_like_command, looks_like_dictation,
+)
 from .interpreter.schema import DraftArgs, PatientRefArgs, QuestionArgs, ReportQueryArgs, UnsupportedArgs
 from .models import MODALITY_LABELS, AssistantResponse, Clinician, DraftReport, Evidence, Patient, Report, TraceStep
 from .repository import Repository
@@ -98,7 +100,29 @@ class Assistant:
                 t = time.perf_counter()
         call = self.rules.interpret(turn.text, ictx, mode)
         turn.step("interpret", t, engine="rule_based", tool=call.name, args=call.args)
-        return call
+        return self._check_rule_name(call, turn)
+
+    def _check_rule_name(self, call: ToolCall, turn: Turn) -> ToolCall:
+        """The rules treat leftover words as a name, so "Does she have a tumour?" yields "tumour".
+        When those words come after a pronoun and match no patient in scope, they are part of the
+        question and the pronoun is the reference. Anything that matches a patient is kept: names win."""
+        name = call.args.get("patient_name")
+        if call.name not in REPORT_TOOLS or not name or call.args.get("patient_id"):
+            return call
+        pron = first_pronoun(turn.text)
+        if pron is None:
+            return call
+        ref, pron_at = pron
+        word = re.search(rf"\b{re.escape(str(name).split()[0])}", turn.text, re.I)
+        if word is None or word.start() < pron_at:
+            return call
+        if match_patients(str(name), self.repo.patients_for(turn.clinician)).status != "not_found":
+            return call
+        turn.step("name_check", words=name, reference=ref,
+                  note="words after the pronoun match no patient; read as part of the request, not as a name")
+        args = {k: v for k, v in call.args.items() if k != "patient_name"}
+        args["patient_reference"] = ref
+        return ToolCall(name=call.name, args=args, source=call.source, usage=call.usage)
 
     def _cross_check_name(self, call: ToolCall, turn: Turn, ictx: InterpretContext) -> ToolCall:
         """If a patient name was spoken but the LLM returned none (e.g. read "Priya's" as a pronoun),
@@ -126,7 +150,7 @@ class Assistant:
             if call.source == "llm":  # re-interpret deterministically rather than act on a bad call
                 fallback = self.rules.interpret(turn.text, InterpretContext(), "auto")
                 turn.step("interpret", engine="rule_based", tool=fallback.name, args=fallback.args, reason="llm_call_invalid")
-                return self._execute(fallback, turn)
+                return self._execute(self._check_rule_name(fallback, turn), turn)
             return self._unsupported(turn, f"I couldn't act on that request ({e}).")
         turn.step("validate", t, ok=True, tool=call.name)
 
@@ -172,6 +196,12 @@ class Assistant:
                 names = " or ".join(f"{c.name} ({c.patient_id})" for c in m.candidates)
                 q = f"I couldn't find an exact match for \"{args.patient_name.title()}\". Did you mean {names}?"
                 return self._ask(turn, call, "confirm_patient", m.candidates, q)
+            active = self._active_patient(turn)
+            if active is not None and call.name in ("summarize_report", "answer_report_question"):
+                # a follow-up with an unrecognised word: offer the open patient, but only act after a yes
+                q = (f"I couldn't find a patient named \"{args.patient_name.title()}\" in your clinic's records. "
+                     f"Did you mean {active.name} ({active.patient_id}), who is open now?")
+                return self._ask(turn, call, "confirm_patient", [active], q)
             return self._respond(turn, "not_found",
                                  f"No patient named \"{args.patient_name.title()}\" is in your clinic's records. "
                                  f"Check the name or use the patient ID.")
@@ -183,7 +213,8 @@ class Assistant:
                 return self._ask(turn, call, "name_patient", [], "Which patient do you mean? No patient is open in this conversation yet.")
             expected = {"pronoun_female": "F", "pronoun_male": "M"}.get(ref)
             if expected and active.sex != expected:
-                word = "her" if expected == "F" else "his"
+                said = (PRONOUN_F if expected == "F" else PRONOUN_M).search(turn.text)
+                word = said.group(0).lower() if said else ("her" if expected == "F" else "his")
                 q = (f"You said \"{word}\", but the patient open now is {active.name} ({active.patient_id}, "
                      f"{'female' if active.sex == 'F' else 'male'}). Which patient do you mean?")
                 turn.step("context_check", t, result="pronoun_mismatch", active_patient=active.patient_id)

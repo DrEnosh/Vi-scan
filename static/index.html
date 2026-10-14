@@ -372,6 +372,11 @@ api("/api/config").then(c => {
       $("cfg-interp").style.background = "var(--warn-soft)";
     }
     $("cfg-stt").textContent = "server STT: " + c.stt_provider + (c.stt_model ? ` (${c.stt_model})` : "");
+    if (c.stt_requested && c.stt_startup_error) {
+      $("cfg-stt").textContent = "server STT: mock (not started)";
+      $("cfg-stt").title = c.stt_startup_error;
+      $("cfg-stt").style.background = "var(--warn-soft)";
+    }
     setMicMode(c.stt_provider); })
   .catch(() => {});
 </script>

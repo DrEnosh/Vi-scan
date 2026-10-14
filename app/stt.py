@@ -76,7 +76,11 @@ class OpenAICompatSTT:
         if client is None:
             if not api_key:
                 raise STTError(f"API key for STT provider '{name}' is not set")
-            from openai import OpenAI  # lazy import: optional dependency
+            try:
+                from openai import OpenAI  # lazy import: optional dependency
+            except ImportError as e:
+                raise STTError("The 'openai' package is not installed. "
+                               "Run: pip install -r requirements-providers.txt") from e
 
             client = OpenAI(api_key=api_key, base_url=base_url, timeout=30, max_retries=1)
         self.client = client

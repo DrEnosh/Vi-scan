@@ -146,8 +146,11 @@ class AssistantResponse(BaseModel):
 
 
 # --------------------------------------------------------------------------- API requests
+TEXT_HARD_LIMIT = 2000  # schema cap; MAX_TEXT_CHARS can lower it, not raise it
+
+
 class MessageRequest(BaseModel):
-    text: str = Field(..., min_length=1, max_length=2000)
+    text: str = Field(..., min_length=1, max_length=TEXT_HARD_LIMIT)
     session_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_-]{1,64}$")
     mode: Literal["auto", "command", "dictation"] = "auto"
     channel: Literal["text", "voice_browser"] = "text"

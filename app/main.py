@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .config import DATA_DIR, STATIC_DIR, Settings, load_settings
 from .interpreter.factory import build_interpreter
-from .models import AssistantResponse, Clinician, DraftReport, DraftUpdateRequest, MessageRequest, TraceStep
+from .models import TEXT_HARD_LIMIT, AssistantResponse, Clinician, DraftReport, DraftUpdateRequest, MessageRequest, TraceStep
 from .orchestrator import Assistant
 from .repository import Repository
 from .session import DraftStore, SessionStore
@@ -43,11 +43,13 @@ def create_app(settings: Settings | None = None, interpreter: Any = None, stt: S
             interpreter = None
     assistant = Assistant(repo, SessionStore(settings.session_ttl_s), drafts, interpreter)
 
+    stt_error: str | None = None
     if stt is None:
         try:
             stt = build_stt(settings.stt_provider, DATA_DIR / "audio_fixtures.json", settings.stt_api_key, settings.stt_model)
-        except STTError as e:
-            log.warning("STT provider '%s' unavailable (%s); using mock STT", settings.stt_provider, e)
+        except Exception as e:  # missing key or package: keep serving, with the mock STT and the reason in /api/config
+            stt_error = f"{type(e).__name__}: {e}"
+            log.warning("STT provider '%s' unavailable (%s); using mock STT", settings.stt_provider, stt_error)
             stt = MockSTT(DATA_DIR / "audio_fixtures.json")
 
     app = FastAPI(title="Viscan Voice Dental Assistant (PoC)", version="0.1.0",
@@ -84,7 +86,8 @@ def create_app(settings: Settings | None = None, interpreter: Any = None, stt: S
         return {"interpreter": assistant.interpreter.name, "llm_model": getattr(llm, "model", None),
                 "stt_model": getattr(stt, "model", None),
                 "llm_requested": settings.interpreter not in ("rule_based", "", "rules"), "llm_startup_error": llm_error,
-                "stt_provider": stt.name, "demo_clinicians": sorted(repo.clinicians), "synthetic_data": True}
+                "stt_provider": stt.name, "stt_requested": settings.stt_provider not in ("mock", ""),
+                "stt_startup_error": stt_error, "demo_clinicians": sorted(repo.clinicians), "synthetic_data": True}
 
     @app.post("/api/assistant/message", response_model=AssistantResponse)
     def message(req: MessageRequest, clinician: Clinician = Depends(get_clinician)) -> AssistantResponse:
@@ -96,6 +99,10 @@ def create_app(settings: Settings | None = None, interpreter: Any = None, stt: S
     async def voice(audio: UploadFile = File(...), session_id: str | None = Form(default=None),
                     mode: str = Form(default="auto"), clinician: Clinician = Depends(get_clinician)) -> AssistantResponse:
         transcript, step = await _transcribe(audio)
+        text_limit = min(settings.max_text_chars, TEXT_HARD_LIMIT)
+        if len(transcript) > text_limit:
+            raise _error(413, "transcript_too_long",
+                         f"The transcript exceeds {text_limit} characters. Record shorter segments.")
         try:
             req = MessageRequest(text=transcript, session_id=session_id, mode=mode)  # type: ignore[arg-type]
         except Exception:

@@ -199,7 +199,9 @@ def summarize_report(report: Report, patient: Patient) -> dict[str, Any]:
 
 
 _IMPRESSION_RE = re.compile(r"\bimpression\b|\bconclusion\b|\bdiagnos\w*|\boverall\b", re.I)
-_RECOMMEND_RE = re.compile(r"\brecommend\w*|\badvi[cs]\w*|\bnext\s+steps?\b|\bplan\b|\btreatment\b|\bsuggest\w*", re.I)
+_RECOMMEND_RE = re.compile(r"\brecommend\w*|\badvi[cs]\w*|\bnext\s+steps?\b|\bplan\b|\btreatment\b|\bsuggest\w*|"
+                           r"\bshould\b|\bneeds?\b|\bextract(?:ion|ions)?\b|\bsurg(?:ery|ical)\b|\bremov(?:e|al)\b|"
+                           r"\bfollow[- ]?ups?\b", re.I)
 
 
 def answer_question(question: str, report: Report, other_reports: list[Report]) -> dict[str, Any]:
@@ -216,7 +218,7 @@ def answer_question(question: str, report: Report, other_reports: list[Report]) 
 
     if not (cats or teeth or asks_impression or asks_recommendation):
         return {"type": "unsupported", "finding_ids": [], "fields": [],
-                "message": ("I can only answer questions about what is documented in the selected report. "
+                "message": (f"I can only answer from what {head} documents, so I can't confirm or rule that out. "
                             "Ask about a tooth (\"what about 48?\"), a finding (\"any caries?\"), "
                             "the impression or the recommendation.")}
 

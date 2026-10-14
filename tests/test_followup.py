@@ -47,3 +47,49 @@ def test_context_is_not_shared_across_clinicians(say):
     r2 = say("Summarize her report", r1["session_id"], clinician="dr_mysuru")
     assert r2["session_id"] != r1["session_id"]
     assert r2["type"] == "clarification"
+
+
+def test_question_words_are_not_read_as_patient_names(say):
+    """Offline interpreter: topic words in a follow-up ("tumour", "healthy", "diagnosis") must not be
+    taken as a patient name. Each question stays on the open patient and is answered from the report."""
+    expected = {
+        "Does she have a tumour?": "unsupported",                 # not documented: can't confirm or rule out
+        "Does she have oral leukoplakia?": "unsupported",         # unknown term after "she": pronoun wins
+        "Is she healthy?": "unsupported",
+        "Has she got bone loss?": "answer",
+        "What is the diagnosis?": "answer",                       # the report's impression, quoted
+        "Is the impaction mesioangular?": "answer",
+        "How is her 36 doing?": "answer",
+        "Is there evidence of infection?": "answer",
+        "Does she need an extraction?": "answer",                 # the report's recommendation, quoted
+        "Should we extract 48?": "answer",                        # a question, not dictation
+        "Is there anything concerning in her report?": "summary",
+        "Is 48 close to the nerve?": "answer",                    # anatomy words are not names either
+        "Is there a crown on 46?": "answer",
+        "Can you check her 46?": "answer",
+        "What was found on the OPG?": "summary",
+        "Read me the recommendation": "answer",
+    }
+    sid = say("Open Priya Sharma's latest OPG report")["session_id"]
+    for question, rtype in expected.items():
+        r = say(question, sid)
+        assert "No patient named" not in r["message"], question
+        assert r["type"] == rtype, (question, r["type"], r["message"])
+        assert r["data"]["patient"]["patient_id"] == "P001", question
+    r = say("Does she need an extraction?", sid)
+    assert "Surgical consultation for 48" in r["message"] and r["data"]["fields"] == ["recommendation"]
+    r = say("Does Priya Shetty have caries?", sid)                # a real name after the verb still wins
+    assert r["data"]["patient"]["patient_id"] == "P002"
+
+
+def test_unknown_word_in_a_followup_offers_the_open_patient(say):
+    """An unrecognised word is never silently swapped for the open patient: the assistant asks first."""
+    sid = say("Open Priya Sharma's latest OPG report")["session_id"]
+    r = say("Does Kavya have caries?", sid)
+    assert r["type"] == "clarification" and "Kavya" in r["message"] and "Priya Sharma (P001)" in r["message"]
+    assert [c["patient_id"] for c in r["data"]["candidates"]] == ["P001"]
+    r = say("yes", sid)
+    assert r["type"] == "answer" and r["data"]["patient"]["patient_id"] == "P001"
+    assert "does not mention caries" in r["message"]
+    r = say("Open Kavya's OPG", sid)                               # a direct open is not redirected
+    assert r["type"] == "not_found" and "No patient named" in r["message"]

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from types import SimpleNamespace
 from typing import Any
 
@@ -87,8 +88,26 @@ def test_settings_for_groq(monkeypatch):
     assert s.llm_api_key == "gsk_test_123" and s.stt_api_key == "gsk_test_123"   # one key, both uses
     assert s.llm_model == "openai/gpt-oss-120b" and s.llm_base_url == "https://api.groq.com/openai/v1"
     assert s.stt_model == "whisper-large-v3-turbo"
+    made: dict[str, Any] = {}
+    fake_sdk = SimpleNamespace(OpenAI=lambda **kw: made.update(kw) or SimpleNamespace())
+    monkeypatch.setitem(sys.modules, "openai", fake_sdk)          # no network, no optional package needed
     interp = build_interpreter(s)
     assert interp.name == "groq" and interp.model == "openai/gpt-oss-120b"
+    assert made["base_url"] == "https://api.groq.com/openai/v1" and made["max_retries"] == 0   # fail fast, fall back
+
+
+def test_missing_provider_package_keeps_the_app_running(monkeypatch):
+    """INTERPRETER=groq / STT_PROVIDER=groq without `pip install -r requirements-providers.txt`:
+    the server still starts in offline mode and says why, instead of crashing."""
+    monkeypatch.setitem(sys.modules, "openai", None)              # makes `import openai` fail
+    for k, v in {"INTERPRETER": "groq", "STT_PROVIDER": "groq", "GROQ_API_KEY": "gsk_test_123"}.items():
+        monkeypatch.setenv(k, v)
+    client = TestClient(create_app(load_settings()))
+    cfg = client.get("/api/config").json()
+    assert cfg["interpreter"] == "rule_based" and "requirements-providers.txt" in cfg["llm_startup_error"]
+    assert cfg["stt_provider"] == "mock" and "requirements-providers.txt" in cfg["stt_startup_error"]
+    r = client.post("/api/assistant/message", json={"text": "Open Priya Sharma's latest OPG report"})
+    assert r.status_code == 200 and r.json()["data"]["report"]["report_id"] == "R-1003"
 
 
 def test_groq_stt_request():

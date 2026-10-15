@@ -21,7 +21,8 @@ COMMAND_START_RE = re.compile(
     r"look|what|what's|whats|does|did|do|is|are|was|were|any|has|have|had|tell|list|check|which|how|where|when|"
     r"should|shall|must)\b",
     re.I)
-SUMMARY_RE = re.compile(r"\bsummar(?:y|ies|ise|ize|ised|ized|ising|izing)\b|\bbrief\s+me\b|\boverview\b|\bgist\b|\brecap\b", re.I)
+SUMMARY_RE = re.compile(
+    r"\bsummar(?:y|ies|ise|ize|ised|ized|ising|izing)\b|\bbrief\s+me\b|\boverview\b|\bgist\b|\brecap\b", re.I)
 QUESTION_VERBS = {"what", "what's", "whats", "does", "did", "do", "is", "are", "was", "were", "any", "has", "have",
                   "had", "tell", "which", "how", "where", "when", "check", "list", "should", "shall", "must"}
 OPEN_VERBS = {"open", "show", "display", "pull", "get", "fetch", "find", "bring", "load", "retrieve", "view", "see",
@@ -32,13 +33,15 @@ BROAD_RE = re.compile(r"\banything\s+(?:concerning|abnormal|wrong|important|sign
                       r"\bexplain\s+(?:the\s+|her\s+|his\s+|their\s+)?(?:findings|report|scan|results?)\b|"
                       r"\bwhat\s+(?:was|were)\s+(?:found|seen|noted)\b", re.I)
 FIELD_RE = re.compile(r"\bimpression\b|\brecommend\w*|\badvi[cs]\w*|\bnext\s+steps?\b|\bconclusion\b", re.I)
-REPORT_WORD_RE = re.compile(r"\breports?\b|\bscans?\b|\bx-?rays?\b|\bradiographs?\b|\bstud(?:y|ies)\b|\bimages?\b|\bfilms?\b", re.I)
+REPORT_WORD_RE = re.compile(
+    r"\breports?\b|\bscans?\b|\bx-?rays?\b|\bradiographs?\b|\bstud(?:y|ies)\b|\bimages?\b|\bfilms?\b", re.I)
 
 MODALITIES: list[tuple[str, re.Pattern[str]]] = [
     ("CBCT", re.compile(r"\bc[\s.]?b[\s.]?c[\s.]?t\b|\bcone[- ]beam\b|\b3d\s+scan\b", re.I)),
     ("LATERAL_CEPH", re.compile(r"\b(?:lateral\s+|lat\s+)?ceph(?:alogram|alometric|alograph)?s?\b", re.I)),
     ("BITEWING", re.compile(r"\bbite[- ]?wings?\b|\bbw\b", re.I)),
-    ("IOPA", re.compile(r"\biopa\b|\bintra-?oral\s+periapical\b|\b(?:periapical|pa)\s+(?:x-?ray|radiograph|film|view)s?\b", re.I)),
+    ("IOPA", re.compile(
+        r"\biopa\b|\bintra-?oral\s+periapical\b|\b(?:periapical|pa)\s+(?:x-?ray|radiograph|film|view)s?\b", re.I)),
     ("OPG", re.compile(r"\bo[\s.]?p[\s.]?gs?\b|\bopt\b|\bpanoramic\b|\bpano\b|\borthopantomogra\w*", re.I)),
 ]
 PREVIOUS_RE = re.compile(r"\b(?:previous|prior|earlier|older|second\s+(?:latest|last|most\s+recent)|one\s+before|"
@@ -281,17 +284,15 @@ class RuleBasedInterpreter:
         }
         m = COMMAND_START_RE.search(text)
         verb = m["verb"].lower() if m else None
-        has_target = bool(categories_in_question(text) or any(s.type in ("tooth", "unresolved") for s in find_sites(text))
-                          or FIELD_RE.search(text))
+        has_target = bool(categories_in_question(text) or FIELD_RE.search(text)
+                          or any(s.type in ("tooth", "unresolved") for s in find_sites(text)))
         is_question = (verb in QUESTION_VERBS) or text.rstrip().endswith("?")
 
         if SUMMARY_RE.search(text) or (BROAD_RE.search(text) and not has_target):
             intent = "summarize_report"
-        elif is_question and has_target:
-            intent = "answer_report_question"
-        elif FIELD_RE.search(text) and verb in ("read", "give", "show", "tell", "display", "get") \
-                and report_args["modality"] == "ANY":
-            intent = "answer_report_question"
+        elif (is_question and has_target) or (FIELD_RE.search(text) and report_args["modality"] == "ANY"
+                                               and verb in ("read", "give", "show", "tell", "display", "get")):
+            intent = "answer_report_question"  # a question about the report, or "read me the impression"
         elif verb in OPEN_VERBS or (is_question and (REPORT_WORD_RE.search(text) or report_args["modality"] != "ANY")):
             intent = "open_report"
         elif is_question:

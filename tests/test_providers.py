@@ -64,7 +64,8 @@ def test_groq_end_to_end_through_app():
     fake = FakeChat("open_report", {"patient_name": "Rahul Menon", "patient_reference": "named",
                                     "modality": "OPG", "which": "latest"})
     client = TestClient(create_app(Settings(), interpreter=groq(fake)))
-    r = client.post("/api/assistant/message", json={"text": "Can you get me the panoramic x-ray we took for Rahul Menon?"}).json()
+    text = "Can you get me the panoramic x-ray we took for Rahul Menon?"
+    r = client.post("/api/assistant/message", json={"text": text}).json()
     assert r["type"] == "report" and r["data"]["report"]["report_id"] == "R-3001"
     step = next(s for s in r["trace"] if s["step"] == "interpret")
     assert step["detail"]["engine"] == "groq" and step["detail"]["usage"]["output_tokens"] == 60
@@ -151,7 +152,8 @@ def test_null_arguments_are_accepted():
         {"category": "impaction", "qualifiers": None, "tooth_fdi": 48, "site_label": None, "present": True,
          "certainty": "stated", "evidence": "Lower right third molar is horizontally impacted"}]})
     client2 = TestClient(create_app(Settings(), interpreter=groq(fake2)))
-    d = client2.post("/api/assistant/message", json={"text": "Lower right third molar is horizontally impacted"}).json()["data"]
+    text = "Lower right third molar is horizontally impacted"
+    d = client2.post("/api/assistant/message", json={"text": text}).json()["data"]
     assert [(f["category"], f["site"]["fdi"]) for f in d["findings"]] == [("impaction", "48")]
     assert d["rejected_findings"] == []
 
@@ -205,11 +207,13 @@ def test_whisper_silence_hallucination_is_rejected():
 
     # what the live run actually produced for a silent clip
     with pytest.raises(STTError, match="No speech"):
-        _whisper("Thank you.", [{"text": "Thank you.", "no_speech_prob": 0.12, "avg_logprob": -0.4}]).transcribe(b"x", "a.wav", "audio/wav")
+        silent = _whisper("Thank you.", [{"text": "Thank you.", "no_speech_prob": 0.12, "avg_logprob": -0.4}])
+        silent.transcribe(b"x", "a.wav", "audio/wav")
     # a segment Whisper itself marks as probably-not-speech is dropped, real speech is kept
-    text, meta = _whisper("Summarize her report. Thanks for watching!", [
+    mixed = _whisper("Summarize her report. Thanks for watching!", [
         {"text": "Summarize her report.", "no_speech_prob": 0.01, "avg_logprob": -0.2},
-        {"text": "Thanks for watching!", "no_speech_prob": 0.83, "avg_logprob": -0.9}]).transcribe_with_meta(b"x", "a.wav", "audio/wav")
+        {"text": "Thanks for watching!", "no_speech_prob": 0.83, "avg_logprob": -0.9}])
+    text, meta = mixed.transcribe_with_meta(b"x", "a.wav", "audio/wav")
     assert text == "Summarize her report." and meta["dropped_no_speech"] == 1
 
 
@@ -218,8 +222,8 @@ def test_whisper_request_uses_verbose_json():
 
     def create(**kw: Any) -> Any:
         sent.update(kw)
-        return SimpleNamespace(text="Open Priya Sharma's latest OPG report",
-                               segments=[{"text": "Open Priya Sharma's latest OPG report", "no_speech_prob": 0.02, "avg_logprob": -0.15}])
+        said = "Open Priya Sharma's latest OPG report"
+        return SimpleNamespace(text=said, segments=[{"text": said, "no_speech_prob": 0.02, "avg_logprob": -0.15}])
 
     fake = SimpleNamespace(audio=SimpleNamespace(transcriptions=SimpleNamespace(create=create)))
     stt = OpenAICompatSTT(None, "whisper-large-v3-turbo", name="groq", client=fake)
@@ -246,8 +250,9 @@ def test_report_request_actions_map_to_internal_tools():
 def test_misattributed_qualifier_is_dropped():
     text = "Lower right third molar is horizontally impacted with roots close to the mandibular canal."
     fake = FakeChat("draft_findings", {"findings": [
-        {"category": "impaction", "qualifiers": ["horizontal", "roots close to the mandibular canal"], "tooth_fdi": "48",
-         "present": True, "certainty": "stated", "evidence": "Lower right third molar is horizontally impacted"}]})
+        {"category": "impaction", "qualifiers": ["horizontal", "roots close to the mandibular canal"],
+         "tooth_fdi": "48", "present": True, "certainty": "stated",
+         "evidence": "Lower right third molar is horizontally impacted"}]})
     client = TestClient(create_app(Settings(), interpreter=groq(fake)))
     d = client.post("/api/assistant/message", json={"text": text}).json()["data"]
     imp = d["findings"][0]
@@ -273,8 +278,8 @@ def test_dropped_name_cannot_open_the_wrong_patient():
     interp = groq(opener)
     client = TestClient(create_app(Settings(), interpreter=interp))
     sid = say(client, "Open Rahul Menon's latest OPG")["session_id"]                       # a male patient is open
-    interp.client = FakeChat("report_request", {"action": "open", "patient_reference": "pronoun_male", "modality": "OPG",
-                                                "which": "latest"})                         # model drops "Arjun"
+    interp.client = FakeChat("report_request", {"action": "open", "patient_reference": "pronoun_male",
+                                                "modality": "OPG", "which": "latest"})      # model drops "Arjun"
     r = say(client, "Open Arjun Nair's OPG", sid)
     assert r["data"]["patient"]["patient_id"] == "P004" and r["data"]["report"]["report_id"] == "R-4001"
 
@@ -284,5 +289,6 @@ def test_qualifier_wording_is_canonicalised():
         {"category": "impaction", "qualifiers": ["horizontally"], "tooth_fdi": "48", "present": True,
          "certainty": "stated", "evidence": "Lower right third molar is horizontally impacted"}]})
     client = TestClient(create_app(Settings(), interpreter=groq(fake)))
-    d = client.post("/api/assistant/message", json={"text": "Lower right third molar is horizontally impacted"}).json()["data"]
+    text = "Lower right third molar is horizontally impacted"
+    d = client.post("/api/assistant/message", json={"text": text}).json()["data"]
     assert d["findings"][0]["qualifiers"] == ["horizontal"]

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from types import SimpleNamespace
-from typing import Any, Callable
+from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
@@ -34,7 +35,8 @@ def say(client: TestClient) -> Callable[..., dict[str, Any]]:
 class FakeLLMClient:
     """Stands in for an OpenAI-compatible client (Groq): returns a scripted tool call, or raises."""
 
-    def __init__(self, tool_name: str | None = None, tool_input: dict[str, Any] | None = None, error: Exception | None = None):
+    def __init__(self, tool_name: str | None = None, tool_input: dict[str, Any] | None = None,
+                 error: Exception | None = None):
         self.calls: list[dict[str, Any]] = []
         self.tool_name, self.tool_input, self.error = tool_name, tool_input or {}, error
         self.chat = SimpleNamespace(completions=SimpleNamespace(create=self._create))
@@ -45,8 +47,8 @@ class FakeLLMClient:
             raise self.error
         call = SimpleNamespace(function=SimpleNamespace(name=self.tool_name, arguments=json.dumps(self.tool_input)))
         message = SimpleNamespace(tool_calls=[call], content=None)
-        return SimpleNamespace(choices=[SimpleNamespace(message=message)],
-                               usage=SimpleNamespace(prompt_tokens=830, completion_tokens=96, prompt_tokens_details=None))
+        usage = SimpleNamespace(prompt_tokens=830, completion_tokens=96, prompt_tokens_details=None)
+        return SimpleNamespace(choices=[SimpleNamespace(message=message)], usage=usage)
 
 
 @pytest.fixture

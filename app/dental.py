@@ -81,7 +81,8 @@ _REGION_PATTERNS = [
     re.compile(r"\b(?:(?:mandibular|maxillary)\s+)?(?:ramus|symphysis|tuberosity)\b", re.I),
 ]
 _GENERAL_RE = re.compile(
-    r"\bgenerali[sz]ed\b|\bfull[- ]mouth\b|\bthroughout\s+(?:the\s+)?(?:arch(?:es)?|dentition|mouth)\b|\ball\s+quadrants\b",
+    r"\bgenerali[sz]ed\b|\bfull[- ]mouth\b|\bthroughout\s+(?:the\s+)?(?:arch(?:es)?|dentition|mouth)\b|"
+    r"\ball\s+quadrants\b",
     re.I)
 _BILATERAL_RE = re.compile(r"\b(?:both|bilateral(?:ly)?|all(?:\s+four)?)\b", re.I)
 
@@ -192,7 +193,7 @@ def find_sites(text: str) -> list[SiteMatch]:
                 found.append(SiteMatch("tooth", site_display(fdi), m.start(), m.end(), raw, fdi=fdi))
             elif kind == "num":
                 n = gd["num"].lower()
-                pos = _NUM_WORDS.get(n, None) or int(n)
+                pos = _NUM_WORDS.get(n) or int(n)
                 fdi = _fdi(_arch(gd["arch"]), gd["side"].lower(), pos, primary)
                 if not fdi:
                     continue
@@ -289,7 +290,8 @@ FINDINGS: list[FindingDef] = [
                   ("distal", r"\bdistal(?:ly)?\b"),
                   ("occlusal", r"\bocclusal\b"),
                   ("incipient", r"\bincipient\b|\benamel\s+only\b|\blimited\s+to\s+enamel\b"),
-                  ("approaching pulp", r"\bapproach\w*\s+(?:the\s+)?pulp|\bclose\s+to\s+(?:the\s+)?pulp|\bnear\s+(?:the\s+)?pulp"),
+                  ("approaching pulp",
+                   r"\bapproach\w*\s+(?:the\s+)?pulp|\bclose\s+to\s+(?:the\s+)?pulp|\bnear\s+(?:the\s+)?pulp"),
                   ("involving pulp", r"\binvolv\w*\s+(?:the\s+)?pulp\b|\bpulpal\s+involvement\b"))),
     FindingDef("bone_loss", "Alveolar bone loss",
                _p(r"\b(?:alveolar\s+)?bone\s+(?:loss|resorption)\b|\balveolar\s+resorption\b|\bcrestal\s+bone\s+loss\b"),
@@ -315,7 +317,8 @@ FINDINGS: list[FindingDef] = [
                   ("overhanging", r"\boverhang\w*"),
                   ("defective margins", r"\bdefective\b|\bleaking\b|\bmarginal\s+(?:gap|breakdown|defect)\b"))),
     FindingDef("crown", "Crown",
-               _p(r"\bcrowned\b|\b(?:pfm|zirconia|metal|ceramic|porcelain|metal-ceramic|full[- ]coverage|prosthetic)\s+crowns?\b|"
+               _p(r"\bcrowned\b|"
+                  r"\b(?:pfm|zirconia|metal|ceramic|porcelain|metal-ceramic|full[- ]coverage|prosthetic)\s+crowns?\b|"
                   r"\bcrowns?\s+(?:present|in\s+place|placed|noted)\b")),
     FindingDef("implant", "Implant",
                _p(r"\bimplants?\b"),
@@ -430,7 +433,8 @@ _UNCERTAIN_RE = re.compile(
     r"cannot\s+(?:be\s+)?rule[ds]?\s+out|cannot\s+be\s+ruled\s+out|can'?t\s+rule\s+out|cannot\s+(?:be\s+)?exclude[d]?|"
     r"not\s+sure|not\s+certain|doubtful|equivocal|indeterminate|rule\s+out|r/o|\?)", re.I)
 _NO_CHANGE_RE = re.compile(r"\bno\s+(?:significant\s+|interval\s+|appreciable\s+)?change\b|\bnot\s+changed\b", re.I)
-_NEG_BEFORE_RE = re.compile(r"\b(?:no|not|without|absence\s+of|absent|negative\s+for|free\s+of|nil|none|neither|nor)\b", re.I)
+_NEG_BEFORE_RE = re.compile(
+    r"\b(?:no|not|without|absence\s+of|absent|negative\s+for|free\s+of|nil|none|neither|nor)\b", re.I)
 _NEG_AFTER_RE = re.compile(
     r"^\W*(?:\w+\W+){0,4}?(?:is\s+|are\s+)?(?:not\s+(?:seen|noted|observed|evident|present|detected|visible|identified|appreciated)|"
     r"absent|ruled\s+out)\b", re.I)
@@ -440,7 +444,8 @@ def _mask(text: str, rx: re.Pattern[str]) -> str:
     return rx.sub(lambda m: " " * len(m.group(0)), text)
 
 
-def assertion_status(piece: str, start: int, end: int, sentence_is_question: bool = False) -> tuple[bool, str, str | None]:
+def assertion_status(piece: str, start: int, end: int,
+                     sentence_is_question: bool = False) -> tuple[bool, str, str | None]:
     """Return (present, certainty, uncertainty cue) for the finding at piece[start:end]."""
     unc = _UNCERTAIN_RE.search(piece)
     cue = unc.group(0).strip() if unc else ("?" if sentence_is_question else None)

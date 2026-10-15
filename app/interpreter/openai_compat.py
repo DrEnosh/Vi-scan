@@ -14,7 +14,8 @@ from .schema import LLM_TOOLS, InterpretContext, ToolCall, to_internal_call
 
 # Convert the shared tool definitions to the OpenAI "function" format once.
 OPENAI_TOOLS: list[dict[str, Any]] = [
-    {"type": "function", "function": {"name": t["name"], "description": t["description"], "parameters": t["input_schema"]}}
+    {"type": "function",
+     "function": {"name": t["name"], "description": t["description"], "parameters": t["input_schema"]}}
     for t in LLM_TOOLS
 ]
 

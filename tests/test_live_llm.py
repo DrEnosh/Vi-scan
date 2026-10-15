@@ -40,7 +40,8 @@ def live():
 
 
 def _tool(r):
-    return next(s["detail"]["tool"] for s in r["trace"] if s["step"] == "interpret" and s["detail"]["engine"] != "rule_based")
+    return next(s["detail"]["tool"] for s in r["trace"]
+                if s["step"] == "interpret" and s["detail"]["engine"] != "rule_based")
 
 
 def test_live_retrieval_and_followup(live):

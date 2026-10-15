@@ -1,0 +1,14 @@
+# Tool settings only; dependencies are in requirements.txt.
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "SIM", "C4", "PIE", "RUF"]
+ignore = [
+    "B008",    # FastAPI declares request parameters as default arguments (Header, File, Form, Depends)
+    "SIM905",  # long word lists read better as one string split on whitespace
+]
+# Curly apostrophes and dashes from speech-to-text are matched on purpose; "․" is a same-length
+# placeholder for the dot in abbreviations while splitting sentences.
+allowed-confusables = ["’", "–", "․"]

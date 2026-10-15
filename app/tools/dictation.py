@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from ..dental import (
+    FINDING_BY_KEY,
     SiteMatch, assertion_status, find_findings, find_sites, qualifiers_in,
 )
 from ..models import DraftFinding, Site
@@ -222,6 +223,11 @@ def dedupe_findings(findings: list[DraftFinding]) -> list[DraftFinding]:
             continue
         index[key] = f
         out.append(f)
+    # A non-specific finding ("radiolucency") adds nothing when a more specific one ("periapical
+    # radiolucency") covers the same site with the same polarity; the parser applies the same rule.
+    out = [f for f in out if not any(
+        g is not f and FINDING_BY_KEY.get(f.category) and g.category in FINDING_BY_KEY[f.category].suppressed_by
+        and _site_key(g) == _site_key(f) and g.present == f.present for g in out)]
     for i, f in enumerate(out, 1):
         f.finding_id = f"D{i}"
     return out

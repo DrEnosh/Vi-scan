@@ -6,6 +6,9 @@ It produces exactly the same tool calls the LLM interpreter would, so everything
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
+from dataclasses import dataclass
+from difflib import SequenceMatcher
 
 from ..dental import categories_in_question, find_findings, find_sites, question_term_spans
 from .schema import InterpretContext, ToolCall
@@ -57,41 +60,40 @@ PRONOUN_F = re.compile(r"\b(?:her|hers|she)\b", re.I)
 PRONOUN_M = re.compile(r"\b(?:his|him|he)\b", re.I)
 PRONOUN_N = re.compile(r"\b(?:their|them|they|this\s+patient|the\s+patient|same\s+patient|current\s+patient)\b", re.I)
 
-STOPWORDS = set("""
-open show display pull up get fetch find bring load retrieve view see summarize summarise summary summaries summarized
-summarised summarizing summarising give read me the a an for of from to on in at with about please can could would you
-i want need like let lets us report reports scan scans xray xrays x ray rays radiograph radiographs study studies image
-images film films latest last recent newest current most previous prior earlier older second one before that earliest
-oldest first initial baseline dated date taken done her hers his him she he their them they this patient patients same is
-are was were does do did any has have had what whats tell which how where when say says said mention mentions mentioned
-shows showing there it its quick brief overview gist recap again now also and or just okay ok hey dental dentist doctor dr
-up thanks thank status file files chart record records result results findings finding note notes id number view
-something anything everything all some side tooth teeth s recommended recommendation recommendations recommend
-impression advice advised advise plan next step steps conclusion treatment suggested suggest suggestion seen noted
-written documented reported mentioned there's anything else more details detail mr mrs ms miss master madam sir
-look looking took taken done we us our at need want
-be been being am isn't aren't wasn't doesn't didn't don't hasn't haven't no not nor yes so if then than why who whom
-whose whether here these those still already yet very really quite much many less least other another each every
-either both such own only even ever never always maybe perhaps probably possibly should shall must might got gets
-getting doing going gone seem seems seemed looks looked appear appears appeared know knows think mean means sure
-right alright hello hi good great fine well
-serious severe mild moderate bad worse better worst best normal abnormal abnormality abnormalities healthy unhealthy
-concerning concern concerns concerned worrying worried worry urgent urgently important significant notable unusual
-issue issues problem problems wrong red flag flags diagnosis diagnoses diagnosed diagnostic prognosis radiologist
-radiologists radiology surgeon specialist opinion cancer cancers cancerous tumor tumour tumors tumours malignancy
-malignant benign growth growths mass masses lump oral mouth jaw jaws bone bones infection infected infections
-inflammation inflamed pain painful swelling swollen evidence sign signs symptom symptoms extraction extractions
-extract removal remove removed surgery surgical treat treated treating needed needs level levels condition conditions
-progress progression change changes changed compared compare comparison since time times ago today yesterday week
-weeks month months year years old new visit visits appointment appointments slot slots book booking schedule
-mesioangular distoangular horizontal horizontally vertical vertically angulation angle position positioned erupted
-erupting partially fully completely impacted diabetes diabetic hypertension allergy allergies medical history health
-risk risks key main overall general generally possible probable likely unlikely suspect suspected suspicious
-suggestive suggests query questionable doubtful equivocal indeterminate cannot rule exclude excluded certain uncertain
-out off over under down picture idea check checked checking found clear clean close closer near nearby stable
-unchanged due follow explain explained upper lower left front back molar molars premolar premolars incisor incisors
-canine canines arch arches maxilla maxillary mandible mandibular quadrant quadrants
+# ----------------------------------------------------------------------------- patient names
+# A word counts as part of a patient name only with evidence for it: it matches a name in the
+# clinic's patient list, or it sits where a name sits ("Priya's", "patient Rahul", "does Kavya have",
+# "open Arjun"). Any other unknown word is read as part of the request, so a clinical word the rules
+# have never seen ("Is malignancy ruled out?") needs no entry anywhere. The only fixed lists are
+# grammar: English function words and the assistant's own command vocabulary.
+FUNCTION_WORDS = frozenset("""
+a an the this that these those it its it's there there's here what's whats that's let let's lets
+who who's whom whose why
+i me my mine we us our you your he him his she her hers they them their theirs
+is isn't are aren't was wasn't were be been being am do don't does doesn't did didn't done has hasn't have
+haven't had having can can't could will would shall should may might must
+and or but nor not no yes so if then than as at by for from in into of on onto off over under to up down
+out with without about after before since between through again also too just only even still yet ever
+never always already really actually maybe perhaps very quite much many more most less least some any all
+each every both either neither other another such same own something anything everything nothing else
+one ones like please thanks thank ok okay hey hi hello sure right alright well now
 """.split())
+COMMAND_WORDS = frozenset("""
+open show display pull get fetch find bring load retrieve view see look read give tell list check say says said
+summary summaries summarize summarise summarized summarised overview gist recap brief explain
+report reports scan scans xray xrays x ray rays radiograph radiographs study studies image images film films
+file files record records chart result results finding findings note notes details detail
+impression conclusion recommendation recommendations recommend recommended advice advise advised plan
+latest last recent newest current previous prior earlier older first earliest oldest initial baseline second
+today yesterday tomorrow week weeks month months year years day days ago time
+patient patients clinic doctor dr radiologist mention mentions mentioned noted seen documented
+""".split())
+NOT_NAMES = FUNCTION_WORDS | COMMAND_WORDS | OPEN_VERBS | QUESTION_VERBS
+NAME_CUES = frozenset({"patient", "named", "called", "mr", "mrs", "ms", "miss", "master"})
+AUX_VERBS = frozenset({"does", "did", "do", "has", "have", "is", "was"})
+HAVE_VERBS = frozenset({"have", "has", "had", "got", "get", "need", "needs"})
+VERB_PARTICLES = frozenset({"me", "up", "us"})  # "show me Arjun", "pull up Rahul"
+TOKEN_RE = re.compile(r"[A-Za-z]+(?:['’][A-Za-z]+)?['’]?")
 
 
 def detect_modality(text: str) -> str:
@@ -131,35 +133,105 @@ def detect_which(text: str, has_date: bool) -> str:
     return "by_date" if has_date else "latest"
 
 
-def extract_name(text: str, extra_masks: list[tuple[int, int]] | None = None) -> str | None:
-    """Strip command words, modalities, dates, findings and sites; what remains is the spoken name."""
-    masked = list(text)
-    spans = list(extra_masks or [])
+@dataclass
+class _Token:
+    raw: str
+    word: str          # lower case, possessive removed
+    start: int
+    possessive: bool
+    masked: bool
+
+
+def _close(a: str, b: str) -> bool:
+    """A near spelling of a name word ("Pria" / "Priya"): long enough, same first letter, similar letters."""
+    return (len(a) >= 4 and len(b) >= 4 and a[0] == b[0] and abs(len(a) - len(b)) <= 1
+            and SequenceMatcher(None, a, b).ratio() >= 0.8)
+
+
+def _tokens(text: str, masks: list[tuple[int, int]], known: set[str]) -> list[_Token]:
+    out = []
+    for m in TOKEN_RE.finditer(text):
+        raw = m.group(0).replace("’", "'")
+        low = raw.lower()
+        word = re.sub(r"'s?$", "", low)
+        if low in NOT_NAMES:
+            word = low  # "it's", "what's": grammar, not a possessive
+        elif word.endswith("s") and word not in known and word[:-1] in known:
+            word = word[:-1]  # "sharmas" typed or transcribed without the apostrophe
+        out.append(_Token(raw, word, m.start(), word != low.rstrip("'"),
+                          any(a < m.end() and m.start() < b for a, b in masks)))
+    return out
+
+
+def _capitalised(tok: _Token, text: str) -> bool:
+    """Capitalised mid-sentence ("the report for Meera"); only meaningful when the text is in normal case."""
+    if not tok.raw[0].isupper() or tok.raw.isupper() or text.islower() or text.isupper():
+        return False
+    before = text[:tok.start].rstrip()
+    return bool(before) and before[-1] not in ".!?:;"
+
+
+def find_name(text: str, names: Sequence[str] = (), masks: list[tuple[int, int]] | None = None,
+              bare: bool = False) -> str | None:
+    """The patient name spoken in `text`, or None.
+
+    `names` are the clinic's patient names (local only; never sent to a model). With `bare=True`
+    the whole utterance is expected to be a name (the answer to "which patient?")."""
+    known = {w for n in names for w in re.findall(r"[a-z]+", n.lower())}
+    spans = list(masks or [])
     for _, rx in MODALITIES:
         spans += [m.span() for m in rx.finditer(text)]
     spans += [m.span() for m in PATIENT_ID_RE.finditer(text)]
     spans += [(f.start, f.end) for f in find_findings(text)]
     spans += [(s.start, s.end) for s in find_sites(text)]
     spans += question_term_spans(text)
-    for a, b in spans:
-        for i in range(a, b):
-            masked[i] = " "
-    cleaned = "".join(masked).replace("’", "'")
-    tokens = re.findall(r"[A-Za-z]+(?:'[A-Za-z]*)?", cleaned)
-    words = []
-    for tok in tokens:
-        w = re.sub(r"'s?$", "", tok.lower())
-        if w and w not in STOPWORDS and len(w) > 1:
-            words.append(w)
-    if not words:
+    command = COMMAND_START_RE.search(text)
+    if command:
+        spans.append(command.span())
+    toks = _tokens(text, spans, known)
+
+    def usable(t: _Token) -> bool:
+        return not t.masked and len(t.word) > 1 and t.word not in NOT_NAMES
+
+    def in_index(t: _Token) -> bool:
+        return t.word in known or any(_close(t.word, k) for k in known)
+
+    def own_evidence(i: int) -> bool:
+        t, prev = toks[i], toks[i - 1].word if i else ""
+        object_of_verb = (command is not None and command["verb"].lower() in OPEN_VERBS | {"summarize", "summarise"}
+                          and all(x.word in VERB_PARTICLES for x in toks[:i] if x.start >= command.end()))
+        return in_index(t) or t.possessive or prev in NAME_CUES or object_of_verb or _capitalised(t, text)
+
+    runs: list[list[int]] = []
+    for i, t in enumerate(toks):
+        if not usable(t):
+            continue
+        if runs and runs[-1][-1] == i - 1:
+            runs[-1].append(i)
+        else:
+            runs.append([i])
+
+    found: list[tuple[bool, list[str]]] = []  # (matches the patient list, name words) per run
+    for run in runs:
+        before = toks[run[0] - 1].word if run[0] else ""
+        if before in ("dr", "doctor"):
+            continue  # "what did Dr. Rao say": a clinician, not the patient
+        words = [toks[i].word for i in run if own_evidence(i)]
+        after = toks[run[-1] + 1].word if run[-1] + 1 < len(toks) else ""
+        if not words and (bare or (before in AUX_VERBS and after in HAVE_VERBS)):  # "does Kavya Reddy have ..."
+            words = [toks[i].word for i in run]
+        if words:
+            found.append((any(in_index(toks[i]) for i in run), words))
+    if not found:
         return None
+    words = next((w for indexed, w in found if indexed), found[0][1])  # a known name beats an unknown word
     return " ".join(words[:4])
 
 
-def _patient_args(text: str, masks: list[tuple[int, int]]) -> dict[str, object]:
+def _patient_args(text: str, masks: list[tuple[int, int]], names: Sequence[str]) -> dict[str, object]:
     if m := PATIENT_ID_RE.search(text):
         return {"patient_id": f"P{m['num']}", "patient_reference": "named"}
-    name = extract_name(text, masks)
+    name = find_name(text, names, masks)
     if name:
         return {"patient_name": name, "patient_reference": "named"}
     if PRONOUN_F.search(text):
@@ -196,7 +268,8 @@ def looks_like_command(text: str) -> bool:
 class RuleBasedInterpreter:
     name = "rule_based"
 
-    def interpret(self, text: str, ctx: InterpretContext, mode: str = "auto") -> ToolCall:
+    def interpret(self, text: str, ctx: InterpretContext, mode: str = "auto", names: Sequence[str] = ()) -> ToolCall:
+        """`names`: the clinician's patient names, used locally to recognise a spoken name."""
         if mode == "dictation" or (mode == "auto" and looks_like_dictation(text)):
             return ToolCall(name="draft_findings", args={}, source="rule_based")
 
@@ -227,7 +300,7 @@ class RuleBasedInterpreter:
             return ToolCall(name="unsupported_request", args={"reason": "No supported command recognised."},
                             source="rule_based")
 
-        patient = _patient_args(text, date_spans)
+        patient = _patient_args(text, date_spans, names)
         if intent == "answer_report_question":
             return ToolCall(name=intent, args={"question": text[:500], **patient}, source="rule_based")
         return ToolCall(name=intent, args={**report_args, **patient}, source="rule_based")

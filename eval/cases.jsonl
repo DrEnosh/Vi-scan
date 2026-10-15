@@ -1,0 +1,134 @@
+{"id": "R01", "group": "retrieval", "text": "Open Priya Sharma's latest OPG report", "expect": {"type": "report", "patient": "P001", "report": "R-1003"}}
+{"id": "R02", "group": "retrieval", "text": "Show me Rahul Menon's latest IOPA", "expect": {"type": "report", "patient": "P003", "report": "R-3002"}}
+{"id": "R03", "group": "retrieval", "text": "Can you get me the panoramic x-ray we took for Rahul Menon?", "expect": {"type": "report", "patient": "P003", "report": "R-3001"}}
+{"id": "R04", "group": "retrieval", "text": "Open Fatima Khan's CBCT", "expect": {"type": "report", "patient": "P005", "report": "R-5002"}}
+{"id": "R05", "group": "retrieval", "text": "Open Arjun Nair's lateral ceph", "expect": {"type": "report", "patient": "P004", "report": "R-4002"}}
+{"id": "R06", "group": "retrieval", "text": "Open Ananya Rao's IOPA", "expect": {"type": "report", "patient": "P006", "report": "R-6002"}}
+{"id": "R07", "group": "retrieval", "text": "Open Anaya Rao's OPG", "expect": {"type": "report", "patient": "P007", "report": "R-7001"}}
+{"id": "R08", "group": "retrieval", "text": "Open Priya Sharma's previous OPG", "expect": {"type": "report", "patient": "P001", "report": "R-1001"}}
+{"id": "R09", "group": "retrieval", "text": "Open Priya Sharma's earliest report", "expect": {"type": "report", "patient": "P001", "report": "R-1001"}}
+{"id": "R10", "group": "retrieval", "text": "Open Priya Sharma's OPG from November 2025", "expect": {"type": "report", "patient": "P001", "report": "R-1001"}}
+{"id": "R11", "group": "retrieval", "text": "Open Priya Sharma's IOPA from February", "expect": {"type": "report", "patient": "P001", "report": "R-1002"}}
+{"id": "R12", "group": "retrieval", "text": "Show Priya Shetty's bitewing", "expect": {"type": "report", "patient": "P002", "report": "R-2002"}}
+{"id": "R13", "group": "retrieval", "text": "Open patient P004's OPG", "expect": {"type": "report", "patient": "P004", "report": "R-4001"}}
+{"id": "R14", "group": "retrieval", "text": "Open P006", "expect": {"type": "report", "patient": "P006", "report": "R-6002"}}
+{"id": "R15", "group": "retrieval", "text": "Summarize Rahul Menon's latest report", "expect": {"type": "summary", "patient": "P003", "report": "R-3002"}}
+{"id": "R16", "group": "retrieval", "text": "Give me a summary of Fatima Khan's OPG", "expect": {"type": "summary", "patient": "P005", "report": "R-5001"}}
+{"id": "R17", "group": "retrieval", "text": "Can you summarise Ananya Rao's latest OPG?", "expect": {"type": "summary", "patient": "P006", "report": "R-6001"}}
+{"id": "R18", "group": "retrieval", "text": "What does Arjun Nair's OPG show?", "expect": {"type": ["summary", "report"], "patient": "P004", "report": "R-4001"}}
+{"id": "R19", "group": "retrieval", "text": "Open the latest OPG for Priya Sharma", "expect": {"type": "report", "patient": "P001", "report": "R-1003"}}
+{"id": "R20", "group": "retrieval", "text": "Bring up Priya Sharma's x-ray from August 2026", "expect": {"type": "report", "patient": "P001", "report": "R-1003"}}
+{"id": "R21", "group": "retrieval", "text": "Load Rahul's OPG", "expect": {"type": "report", "patient": "P003", "report": "R-3001"}}
+{"id": "R22", "group": "retrieval", "text": "Open Fatima's latest scan", "expect": {"type": "report", "patient": "P005", "report": "R-5002"}}
+{"id": "R23", "group": "retrieval", "text": "I need the most recent scan we have on file for Fatima Khan", "expect": {"type": "report", "patient": "P005", "report": "R-5002"}}
+{"id": "R24", "group": "retrieval", "text": "Show me the scan before the latest one for Priya Sharma", "expect": {"type": "report", "patient": "P001", "report": "R-1003"}}
+{"id": "R25", "group": "retrieval", "text": "What was the conclusion on Ananya Rao's IOPA?", "expect": {"type": "answer", "patient": "P006", "report": "R-6002"}}
+{"id": "R26", "group": "retrieval", "text": "open priya sharmas latest opg", "expect": {"type": "report", "patient": "P001", "report": "R-1003"}}
+{"id": "R27", "group": "retrieval", "text": "summarize rahul menons report", "expect": {"type": "summary", "patient": "P003", "report": "R-3002"}}
+{"id": "R28", "group": "retrieval", "text": "Open Priya Sharma's latest O.P.G.", "expect": {"type": "report", "patient": "P001", "report": "R-1003"}}
+{"id": "R29", "group": "retrieval", "text": "Pull up Kiran Das's latest report", "expect": {"type": "not_found"}}
+{"id": "R30", "group": "retrieval", "text": "Does Arjun Nair have any caries?", "expect": {"type": "answer", "patient": "P004"}}
+{"id": "I01", "group": "identity", "text": "Open Priya's latest OPG", "expect": {"type": "clarification", "candidates": ["P001", "P002"], "not_patient": ["P008"]}}
+{"id": "I02", "group": "identity", "text": "Open Pria Sharma's latest OPG", "expect": {"type": "clarification", "candidates": ["P001"]}}
+{"id": "I03", "group": "identity", "text": "Open Priya Shah's latest report", "expect": {"type": ["not_found", "clarification"], "not_patient": ["P008"]}}
+{"id": "I04", "group": "identity", "text": "Open Rao's OPG", "expect": {"type": "clarification", "candidates": ["P006", "P007"]}}
+{"id": "I05", "group": "identity", "text": "Open Kavya Reddy's report", "expect": {"type": "not_found"}}
+{"id": "I06", "group": "identity", "text": "Open the report for Meera", "expect": {"type": "not_found"}}
+{"id": "I07", "group": "identity", "text": "Summarize her report", "expect": {"type": "clarification"}}
+{"id": "I08", "group": "identity", "text": "Does he have bone loss?", "expect": {"type": "clarification"}}
+{"id": "I09", "group": "identity", "text": "Open P012", "expect": {"type": "not_found"}}
+{"id": "I10", "group": "identity", "text": "Open P008's report", "expect": {"type": "not_found", "not_patient": ["P008"]}}
+{"id": "I11", "group": "identity", "text": "Open Rahul Menen's OPG", "expect": {"type": "clarification", "candidates": ["P003"]}}
+{"id": "I12", "group": "identity", "text": "Open Fathima Khan's OPG", "expect": {"type": "clarification", "candidates": ["P005"]}}
+{"id": "I13", "group": "identity", "text": "Is there caries on 46?", "expect": {"type": "clarification"}}
+{"id": "I14", "group": "identity", "text": "Caries on 46?", "expect": {"type": "clarification"}}
+{"id": "F01", "group": "follow_up", "text": "Summarize her report", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "summary", "patient": "P001", "report": "R-1003"}}
+{"id": "F02", "group": "follow_up", "text": "Does she have any caries?", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "answer", "patient": "P001", "report": "R-1003"}}
+{"id": "F03", "group": "follow_up", "text": "What's the impression?", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "answer", "patient": "P001", "report": "R-1003"}}
+{"id": "F04", "group": "follow_up", "text": "Is 48 impacted?", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "answer", "patient": "P001", "report": "R-1003"}}
+{"id": "F05", "group": "follow_up", "text": "Any bone loss?", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "answer", "patient": "P001", "report": "R-1003"}}
+{"id": "F06", "group": "follow_up", "text": "What did they recommend?", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "answer", "patient": "P001", "report": "R-1003"}}
+{"id": "F07", "group": "follow_up", "text": "Show me her previous OPG", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "report", "patient": "P001", "report": "R-1001"}}
+{"id": "F08", "group": "follow_up", "text": "Open her CBCT", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "report", "patient": "P001", "report": "R-1004"}}
+{"id": "F09", "group": "follow_up", "text": "Summarize his report", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "clarification"}}
+{"id": "F10", "group": "follow_up", "text": "Does she have oral cancer?", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "unsupported", "patient": "P001"}}
+{"id": "F11", "group": "follow_up", "text": "Does she have a tumour?", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "unsupported", "patient": "P001"}}
+{"id": "F12", "group": "follow_up", "text": "Is she healthy?", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "unsupported", "patient": "P001"}}
+{"id": "F13", "group": "follow_up", "text": "Does she need an extraction?", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "answer", "patient": "P001", "report": "R-1003"}}
+{"id": "F14", "group": "follow_up", "text": "Is there anything concerning in her report?", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "summary", "patient": "P001", "report": "R-1003"}}
+{"id": "F15", "group": "follow_up", "text": "What are the key findings?", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "summary", "patient": "P001", "report": "R-1003"}}
+{"id": "F16", "group": "follow_up", "text": "Does Kavya have caries?", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": ["clarification", "not_found"]}}
+{"id": "F17", "group": "follow_up", "text": "Open Rahul Menon's latest OPG", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "report", "patient": "P003", "report": "R-3001"}}
+{"id": "F18", "group": "follow_up", "text": "Does Rahul have any caries?", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "answer", "patient": "P003"}}
+{"id": "F19", "group": "follow_up", "text": "What about 36?", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "answer", "patient": "P001", "report": "R-1003"}}
+{"id": "F20", "group": "follow_up", "text": "Read me the impression", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "answer", "patient": "P001", "report": "R-1003"}}
+{"id": "F21", "group": "follow_up", "text": "Has the 36 been root canal treated?", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "answer", "patient": "P001", "report": "R-1003"}}
+{"id": "F22", "group": "follow_up", "text": "Is there periapical pathology on 36?", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "answer", "patient": "P001", "report": "R-1003"}}
+{"id": "F23", "group": "follow_up", "text": "Should we extract 48?", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "answer", "patient": "P001", "report": "R-1003"}}
+{"id": "F24", "group": "follow_up", "text": "And the one before that?", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "report", "patient": "P001", "report": ["R-1001", "R-1002"]}}
+{"id": "F25", "group": "follow_up", "text": "Is there a tumour?", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "unsupported", "patient": "P001"}}
+{"id": "F26", "group": "follow_up", "text": "Summarize his report", "context": {"patient": "P003", "report": "R-3001"}, "expect": {"type": "summary", "patient": "P003", "report": "R-3001"}}
+{"id": "F27", "group": "follow_up", "text": "Does he have bone loss?", "context": {"patient": "P003", "report": "R-3001"}, "expect": {"type": "answer", "patient": "P003", "report": "R-3001"}}
+{"id": "F28", "group": "follow_up", "text": "Summarize her report", "context": {"patient": "P003", "report": "R-3001"}, "expect": {"type": "clarification"}}
+{"id": "F29", "group": "follow_up", "text": "What happened to 46?", "context": {"patient": "P003", "report": "R-3001"}, "expect": {"type": "answer", "patient": "P003", "report": "R-3001"}}
+{"id": "F30", "group": "follow_up", "text": "Open his latest IOPA", "context": {"patient": "P003", "report": "R-3001"}, "expect": {"type": "report", "patient": "P003", "report": "R-3002"}}
+{"id": "F31", "group": "follow_up", "text": "Is 75 carious?", "context": {"patient": "P007", "report": "R-7001"}, "expect": {"type": "answer", "patient": "P007", "report": "R-7001"}}
+{"id": "F32", "group": "follow_up", "text": "Is malignancy ruled out?", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "unsupported", "patient": "P001"}}
+{"id": "M01", "group": "clarify", "text": "Priya Sharma", "setup": ["Open Priya's latest OPG"], "expect": {"type": "report", "patient": "P001", "report": "R-1003"}}
+{"id": "M02", "group": "clarify", "text": "the second one", "setup": ["Open Priya's latest OPG"], "expect": {"type": "report", "patient": "P002", "report": "R-2001"}}
+{"id": "M03", "group": "clarify", "text": "P002", "setup": ["Open Priya's latest OPG"], "expect": {"type": "report", "patient": "P002", "report": "R-2001"}}
+{"id": "M04", "group": "clarify", "text": "yes", "setup": ["Open Pria Sharma's latest OPG"], "expect": {"type": "report", "patient": "P001", "report": "R-1003"}}
+{"id": "M05", "group": "clarify", "text": "cancel", "setup": ["Open Priya's latest OPG"], "expect": {"type": "cancelled"}}
+{"id": "M06", "group": "clarify", "text": "Shetty", "setup": ["Open Priya's latest OPG"], "expect": {"type": "report", "patient": "P002", "report": "R-2001"}}
+{"id": "O01", "group": "out_of_scope", "text": "Book me a CBCT slot for tomorrow", "expect": {"type": "unsupported"}}
+{"id": "O02", "group": "out_of_scope", "text": "What's the weather like?", "expect": {"type": "unsupported"}}
+{"id": "O03", "group": "out_of_scope", "text": "Send the report to the patient on WhatsApp", "expect": {"type": "unsupported"}}
+{"id": "O04", "group": "out_of_scope", "text": "Delete Priya Sharma's report", "expect": {"type": "unsupported"}}
+{"id": "O05", "group": "out_of_scope", "text": "Thank you", "expect": {"type": "unsupported"}}
+{"id": "O06", "group": "out_of_scope", "text": "Generate an invoice for Rahul Menon", "expect": {"type": "unsupported"}}
+{"id": "O07", "group": "out_of_scope", "text": "Prescribe amoxicillin for her", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "unsupported"}}
+{"id": "O08", "group": "out_of_scope", "text": "Change her diagnosis to caries", "context": {"patient": "P001", "report": "R-1003"}, "expect": {"type": "unsupported"}}
+{"id": "D01", "group": "dictation", "text": "Lower right third molar is horizontally impacted with roots close to the mandibular canal.", "expect": {"type": "draft_report", "findings": [{"category": "impaction", "site": "48", "present": true, "certainty": "stated"}, {"category": "canal_proximity", "site": "48", "present": true, "certainty": "stated"}]}}
+{"id": "D02", "group": "dictation", "text": "Possible caries on 46.", "expect": {"type": "draft_report", "findings": [{"category": "caries", "site": "46", "present": true, "certainty": "uncertain"}]}}
+{"id": "D03", "group": "dictation", "text": "No periapical radiolucency in relation to 36.", "expect": {"type": "draft_report", "findings": [{"category": "periapical", "site": "36", "present": false, "certainty": "stated"}]}}
+{"id": "D04", "group": "dictation", "text": "Deep distal caries on 37 approaching the pulp. 36 is root canal treated.", "expect": {"type": "draft_report", "findings": [{"category": "caries", "site": "37", "present": true, "certainty": "stated"}, {"category": "rct", "site": "36", "present": true, "certainty": "stated"}]}}
+{"id": "D05", "group": "dictation", "text": "Upper left first molar shows a periapical radiolucency.", "expect": {"type": "draft_report", "findings": [{"category": "periapical", "site": "26", "present": true, "certainty": "stated"}]}}
+{"id": "D06", "group": "dictation", "text": "46 is missing. Implant at 36 is stable.", "expect": {"type": "draft_report", "findings": [{"category": "missing", "site": "46", "present": true, "certainty": "stated"}, {"category": "implant", "site": "36", "present": true, "certainty": "stated"}]}}
+{"id": "D07", "group": "dictation", "text": "Generalized moderate horizontal bone loss.", "expect": {"type": "draft_report", "findings": [{"category": "bone_loss", "site": "generalized", "present": true, "certainty": "stated"}]}}
+{"id": "D08", "group": "dictation", "text": "Mucosal thickening in the right maxillary sinus.", "expect": {"type": "draft_report", "findings": [{"category": "sinus_thickening", "site": "right maxillary sinus", "present": true, "certainty": "stated"}]}}
+{"id": "D09", "group": "dictation", "text": "Cannot rule out caries on 16.", "expect": {"type": "draft_report", "findings": [{"category": "caries", "site": "16", "present": true, "certainty": "uncertain"}]}}
+{"id": "D10", "group": "dictation", "text": "Suspected root resorption on 47.", "expect": {"type": "draft_report", "findings": [{"category": "root_resorption", "site": "47", "present": true, "certainty": "uncertain"}]}}
+{"id": "D11", "group": "dictation", "text": "No caries detected.", "expect": {"type": "draft_report", "findings": [{"category": "caries", "site": null, "present": false, "certainty": "stated"}]}}
+{"id": "D12", "group": "dictation", "text": "Calculus deposits in the lower anterior region.", "expect": {"type": "draft_report", "findings": [{"category": "calculus", "site": "lower anterior region", "present": true, "certainty": "stated"}]}}
+{"id": "D13", "group": "dictation", "text": "Retained deciduous 75 with the successor 35 unerupted.", "expect": {"type": "draft_report", "findings": [{"category": "retained_deciduous", "site": "75", "present": true, "certainty": "stated"}, {"category": "unerupted", "site": "35", "present": true, "certainty": "stated"}]}}
+{"id": "D14", "group": "dictation", "text": "Fracture of the crown of 11.", "expect": {"type": "draft_report", "findings": [{"category": "fracture", "site": "11", "present": true, "certainty": "stated"}]}}
+{"id": "D15", "group": "dictation", "text": "Widened PDL space around 36.", "expect": {"type": "draft_report", "findings": [{"category": "pdl_widening", "site": "36", "present": true, "certainty": "stated"}]}}
+{"id": "D16", "group": "dictation", "text": "Four eight is impacted mesioangularly.", "expect": {"type": "draft_report", "findings": [{"category": "impaction", "site": "48", "present": true, "certainty": "stated"}]}}
+{"id": "D17", "group": "dictation", "text": "Thirty six shows a large restoration.", "expect": {"type": "draft_report", "findings": [{"category": "restoration", "site": "36", "present": true, "certainty": "stated"}]}}
+{"id": "D18", "group": "dictation", "text": "Root stumps in relation to 46.", "expect": {"type": "draft_report", "findings": [{"category": "root_stump", "site": "46", "present": true, "certainty": "stated"}]}}
+{"id": "D19", "group": "dictation", "text": "Crown on 21 with no periapical changes.", "expect": {"type": "draft_report", "findings": [{"category": "crown", "site": "21", "present": true, "certainty": "stated"}, {"category": "periapical", "site": "21", "present": false, "certainty": "stated"}]}}
+{"id": "D20", "group": "dictation", "text": "Lower left third molar is vertically impacted. The patient is anxious about the procedure.", "expect": {"type": "draft_report", "findings": [{"category": "impaction", "site": "38", "present": true, "certainty": "stated"}]}}
+{"id": "D21", "group": "dictation", "text": "Possible cyst in the right posterior mandible.", "expect": {"type": "draft_report", "findings": [{"category": "cyst", "site": "right posterior mandible", "present": true, "certainty": "uncertain"}]}}
+{"id": "D22", "group": "dictation", "text": "No root resorption of 47.", "expect": {"type": "draft_report", "findings": [{"category": "root_resorption", "site": "47", "present": false, "certainty": "stated"}]}}
+{"id": "D23", "group": "dictation", "text": "Upper third molar is impacted.", "expect": {"type": "draft_report", "findings": [{"category": "impaction", "site": "unresolved", "present": true, "certainty": "stated"}]}}
+{"id": "D24", "group": "dictation", "text": "Caries on 38 and 48.", "expect": {"type": "draft_report", "findings": [{"category": "caries", "site": "38", "present": true, "certainty": "stated"}, {"category": "caries", "site": "48", "present": true, "certainty": "stated"}]}}
+{"id": "D25", "group": "dictation", "text": "Dictate: 26 has a short root canal filling with a periapical lesion.", "expect": {"type": "draft_report", "findings": [{"category": "rct", "site": "26", "present": true, "certainty": "stated"}, {"category": "periapical", "site": "26", "present": true, "certainty": "stated"}]}}
+{"id": "D26", "group": "dictation", "text": "Implant at 46 shows no bone loss.", "expect": {"type": "draft_report", "findings": [{"category": "implant", "site": "46", "present": true, "certainty": "stated"}, {"category": "bone_loss", "site": "46", "present": false, "certainty": "stated"}]}}
+{"id": "D27", "group": "dictation", "text": "Okay so the lower right eight is impacted, horizontally.", "expect": {"type": "draft_report", "findings": [{"category": "impaction", "site": "48", "present": true, "certainty": "stated"}]}}
+{"id": "D28", "group": "dictation", "text": "Mild bone loss around 31 and 41.", "expect": {"type": "draft_report", "findings": [{"category": "bone_loss", "site": "31", "present": true, "certainty": "stated"}, {"category": "bone_loss", "site": "41", "present": true, "certainty": "stated"}]}}
+{"id": "D29", "group": "dictation", "text": "Thirty six has deep caries approaching the pulp.", "expect": {"type": "draft_report", "findings": [{"category": "caries", "site": "36", "present": true, "certainty": "stated"}]}}
+{"id": "D30", "group": "dictation", "text": "Previously treated 46 with a well-sealed root canal filling and no periapical radiolucency.", "expect": {"type": "draft_report", "findings": [{"category": "rct", "site": "46", "present": true, "certainty": "stated"}, {"category": "periapical", "site": "46", "present": false, "certainty": "stated"}]}}
+{"id": "D31", "group": "dictation", "text": "Periapical radiolucency absent in 46.", "expect": {"type": "draft_report", "findings": [{"category": "periapical", "site": "46", "present": false, "certainty": "stated"}]}}
+{"id": "D32", "group": "dictation", "text": "36 shows no evidence of caries.", "expect": {"type": "draft_report", "findings": [{"category": "caries", "site": "36", "present": false, "certainty": "stated"}]}}
+{"id": "D33", "group": "dictation", "text": "26 is free of caries.", "expect": {"type": "draft_report", "findings": [{"category": "caries", "site": "26", "present": false, "certainty": "stated"}]}}
+{"id": "D34", "group": "dictation", "text": "Query root fracture of 21.", "expect": {"type": "draft_report", "findings": [{"category": "fracture", "site": "21", "present": true, "certainty": "uncertain"}]}}
+{"id": "D35", "group": "dictation", "text": "Suggestive of a periapical lesion on 16.", "expect": {"type": "draft_report", "findings": [{"category": "periapical", "site": "16", "present": true, "certainty": "uncertain"}]}}
+{"id": "D36", "group": "dictation", "text": "Likely impacted 38.", "expect": {"type": "draft_report", "findings": [{"category": "impaction", "site": "38", "present": true, "certainty": "uncertain"}]}}
+{"id": "D37", "group": "dictation", "text": "Probable caries on 47.", "expect": {"type": "draft_report", "findings": [{"category": "caries", "site": "47", "present": true, "certainty": "uncertain"}]}}
+{"id": "D38", "group": "dictation", "text": "No signs of root resorption on 47 or 46.", "expect": {"type": "draft_report", "findings": [{"category": "root_resorption", "site": "47", "present": false, "certainty": "stated"}, {"category": "root_resorption", "site": "46", "present": false, "certainty": "stated"}]}}
+{"id": "D39", "group": "dictation", "text": "Caries on 36 but no periapical lesion.", "expect": {"type": "draft_report", "findings": [{"category": "caries", "site": "36", "present": true, "certainty": "stated"}, {"category": "periapical", "site": "36", "present": false, "certainty": "stated"}]}}
+{"id": "D40", "group": "dictation", "text": "Rule out a cyst around 38.", "expect": {"type": "draft_report", "findings": [{"category": "cyst", "site": "38", "present": true, "certainty": "uncertain"}]}}
+{"id": "D41", "group": "dictation", "text": "Negative for periapical pathology on 11.", "expect": {"type": "draft_report", "findings": [{"category": "periapical", "site": "11", "present": false, "certainty": "stated"}]}}
+{"id": "D42", "group": "dictation", "text": "Bone loss is not evident.", "expect": {"type": "draft_report", "findings": [{"category": "bone_loss", "site": null, "present": false, "certainty": "stated"}]}}
+{"id": "D43", "group": "dictation", "text": "Four six has a deep restoration.", "expect": {"type": "draft_report", "findings": [{"category": "restoration", "site": "46", "present": true, "certainty": "stated"}]}}
+{"id": "D44", "group": "dictation", "text": "Tooth number three six is root canal treated.", "expect": {"type": "draft_report", "findings": [{"category": "rct", "site": "36", "present": true, "certainty": "stated"}]}}

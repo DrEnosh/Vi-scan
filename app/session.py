@@ -5,7 +5,7 @@ import threading
 import time
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any, Literal
 
 from .interpreter.schema import ToolCall
@@ -74,7 +74,7 @@ class DraftStore:
 
     @staticmethod
     def now() -> datetime:
-        return datetime.now(timezone.utc)
+        return datetime.now(UTC)
 
 
 def summarize_pending(p: PendingClarification | None) -> dict[str, Any] | None:

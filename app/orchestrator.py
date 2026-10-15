@@ -15,12 +15,18 @@ import logging
 import re
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from .interpreter import InterpretContext, RuleBasedInterpreter, ToolCall
 from .interpreter.rule_based import (
-    PATIENT_ID_RE, PRONOUN_F, PRONOUN_M, find_name, first_pronoun, looks_like_command, looks_like_dictation,
+    PATIENT_ID_RE,
+    PRONOUN_F,
+    PRONOUN_M,
+    find_name,
+    first_pronoun,
+    looks_like_command,
+    looks_like_dictation,
 )
 from .interpreter.schema import DraftArgs, PatientRefArgs, QuestionArgs, ReportQueryArgs, UnsupportedArgs
 from .models import MODALITY_LABELS, AssistantResponse, Clinician, DraftReport, Evidence, Patient, Report, TraceStep
@@ -28,7 +34,12 @@ from .repository import Repository
 from .session import DraftStore, PendingClarification, Session, SessionStore
 from .tools.dictation import build_draft_text, dedupe_findings, merge_missing, parse_dictation
 from .tools.retrieval import (
-    answer_question, match_patients, parse_date_filter, report_listing, select_report, similar_names,
+    answer_question,
+    match_patients,
+    parse_date_filter,
+    report_listing,
+    select_report,
+    similar_names,
     summarize_report,
 )
 from .validation import ToolCallInvalid, ground_llm_findings, validate_tool_call
@@ -40,8 +51,8 @@ EXAMPLES = ['"Open Priya Sharma\'s latest OPG report"', '"Summarize her report"'
             '"Lower right third molar is horizontally impacted" (dictation)']
 REPORT_TOOLS = {"open_report", "summarize_report", "answer_report_question"}
 CANCEL_RE = re.compile(r"^\s*(?:no|nope|cancel|neither|none(?:\s+of\s+them)?|stop|never\s*mind|forget\s+it)\W*$", re.I)
-YES_RE = re.compile(r"^\s*(?:yes|yeah|yep|yup|correct|right|that'?s\s+(?:right|correct|the\s+one)|that\s+one|confirm(?:ed)?|"
-                    r"ok(?:ay)?|sure)\b", re.I)
+YES_RE = re.compile(r"^\s*(?:yes|yeah|yep|yup|correct|right|that'?s\s+(?:right|correct|the\s+one)|that\s+one|"
+                    r"confirm(?:ed)?|ok(?:ay)?|sure)\b", re.I)
 HONORIFICS = {"mr", "mrs", "ms", "miss", "master", "madam", "sir", "dr", "doctor"}
 ORDINALS = [("first", 0), ("1st", 0), ("second", 1), ("2nd", 1), ("third", 2), ("3rd", 2), ("fourth", 3), ("4th", 3),
             ("last", -1)]
@@ -94,12 +105,14 @@ class Assistant:
     # ================================================================== interpretation
     def _interpret(self, turn: Turn, mode: str) -> ToolCall:
         active = self._active_patient(turn)
-        ictx = InterpretContext(has_active_patient=active is not None, active_patient_sex=active.sex if active else None)
+        ictx = InterpretContext(has_active_patient=active is not None,
+                                active_patient_sex=active.sex if active else None)
         t = time.perf_counter()
         if self.interpreter is not self.rules:
             try:
                 call = self.interpreter.interpret(turn.text, ictx, mode)
-                turn.step("interpret", t, engine=self.interpreter.name, tool=call.name, args=call.args, usage=call.usage)
+                turn.step("interpret", t, engine=self.interpreter.name, tool=call.name, args=call.args,
+                          usage=call.usage)
                 call = self._ground_llm_identity(call, turn, ictx)
                 return self._cross_check_name(call, turn, ictx)
             except Exception as e:  # network error, timeout, bad output: degrade, don't fail the clinician
@@ -183,7 +196,8 @@ class Assistant:
             turn.step("validate", t, ok=False, error=str(e))
             if call.source == "llm":  # re-interpret deterministically rather than act on a bad call
                 fallback = self.rules.interpret(turn.text, InterpretContext(), "auto", self._names(turn))
-                turn.step("interpret", engine="rule_based", tool=fallback.name, args=fallback.args, reason="llm_call_invalid")
+                turn.step("interpret", engine="rule_based", tool=fallback.name, args=fallback.args,
+                          reason="llm_call_invalid")
                 return self._execute(self._check_rule_name(fallback, turn), turn)
             return self._unsupported(turn, f"I couldn't act on that request ({e}).")
         turn.step("validate", t, ok=True, tool=call.name)
@@ -209,7 +223,8 @@ class Assistant:
         pid = turn.session.active_patient_id
         return self.repo.get_patient(pid, turn.clinician) if pid else None
 
-    def _resolve_patient(self, call: ToolCall, args: PatientRefArgs, turn: Turn) -> tuple[Patient, list[str]] | AssistantResponse:
+    def _resolve_patient(self, call: ToolCall, args: PatientRefArgs,
+                         turn: Turn) -> tuple[Patient, list[str]] | AssistantResponse:
         t = time.perf_counter()
         accessible = self.repo.patients_for(turn.clinician)
 
@@ -217,7 +232,8 @@ class Assistant:
             p = self.repo.get_patient(args.patient_id, turn.clinician)
             turn.step("tool:find_patient", t, by="id", query=args.patient_id, found=bool(p))
             if p is None:
-                return self._respond(turn, "not_found", f"No patient with ID {args.patient_id.upper()} is in your clinic's records.")
+                return self._respond(turn, "not_found",
+                                     f"No patient with ID {args.patient_id.upper()} is in your clinic's records.")
             return p, self._similar_warnings(p, accessible)
 
         if args.patient_name:
@@ -248,7 +264,8 @@ class Assistant:
         ref = args.patient_reference
         if ref.startswith("pronoun"):
             if active is None:
-                return self._ask(turn, call, "name_patient", [], "Which patient do you mean? No patient is open in this conversation yet.")
+                return self._ask(turn, call, "name_patient", [],
+                                 "Which patient do you mean? No patient is open in this conversation yet.")
             expected = {"pronoun_female": "F", "pronoun_male": "M"}.get(ref)
             if expected and active.sex != expected:
                 said = (PRONOUN_F if expected == "F" else PRONOUN_M).search(turn.text)
@@ -269,19 +286,21 @@ class Assistant:
         if not sims:
             return []
         others = ", ".join(f"{s.name} ({s.patient_id})" for s in sims)
-        return [f"Similar name on file: {others}. Confirm patient ID {p.patient_id} and age {p.age_on()} before acting."]
+        return [f"Similar name on file: {others}. "
+                f"Confirm patient ID {p.patient_id} and age {p.age_on()} before acting."]
 
-    def _ask(self, turn: Turn, call: ToolCall, kind: str, candidates: list[Patient], question: str) -> AssistantResponse:
-        turn.session.pending = PendingClarification(call=call, kind=kind, candidate_ids=[c.patient_id for c in candidates],  # type: ignore[arg-type]
-                                                    question=question)
+    def _ask(self, turn: Turn, call: ToolCall, kind: str, candidates: list[Patient],
+             question: str) -> AssistantResponse:
+        turn.session.pending = PendingClarification(call=call, kind=kind,  # type: ignore[arg-type]
+                                                    candidate_ids=[c.patient_id for c in candidates], question=question)
         cards = [self._candidate_card(c) for c in candidates]
         return self._respond(turn, "clarification", question, data={"kind": kind, "candidates": cards})
 
     def _candidate_card(self, p: Patient) -> dict[str, Any]:
         reports = self.repo.reports_for(p)
         latest = reports[0] if reports else None
-        return {**p.card(), "latest_report": f"{MODALITY_LABELS[latest.modality]} {latest.study_date.isoformat()}" if latest else None,
-                "report_count": len(reports)}
+        label = f"{MODALITY_LABELS[latest.modality]} {latest.study_date.isoformat()}" if latest else None
+        return {**p.card(), "latest_report": label, "report_count": len(reports)}
 
     # ================================================================== clarification follow-up
     def _resolve_pending(self, turn: Turn) -> AssistantResponse | None:
@@ -329,9 +348,11 @@ class Assistant:
                 if m2.status == "resolved" and m2.patient:
                     chosen, how = m2.patient, "name"
                 elif m2.status in ("ambiguous", "needs_confirmation"):
-                    turn.step("clarification", t, result="still_ambiguous", candidates=[c.patient_id for c in m2.candidates])
+                    turn.step("clarification", t, result="still_ambiguous",
+                              candidates=[c.patient_id for c in m2.candidates])
                     return self._ask(turn, pend.call, "choose_patient", m2.candidates,
-                                     f"Still more than one match for \"{name.title()}\". Please give the full name or patient ID.")
+                                     f"Still more than one match for \"{name.title()}\". "
+                                     "Please give the full name or patient ID.")
 
         if chosen is not None:
             turn.session.pending = None
@@ -374,7 +395,8 @@ class Assistant:
             evidence=[Evidence(source="report", report_id=r.report_id, finding_ids=[f.id for f in r.findings])],
             warnings=notes)
 
-    def _pick_report_for_followup(self, patient: Patient, args: ReportQueryArgs | None, turn: Turn) -> tuple[Report | None, str]:
+    def _pick_report_for_followup(self, patient: Patient, args: ReportQueryArgs | None,
+                                  turn: Turn) -> tuple[Report | None, str]:
         reports = self.repo.reports_for(patient)
         if args is not None and args.report_specified:
             sel = select_report(reports, args.modality, args.which, parse_date_filter(args.date))
@@ -398,7 +420,8 @@ class Assistant:
             turn.step("tool:summarize_report", t, patient_id=patient.patient_id, result=None)
             return self._respond(turn, "not_found", f"{patient.name} ({patient.patient_id}): {reason}", warnings=notes)
         s = summarize_report(report, patient)
-        turn.step("tool:summarize_report", t, patient_id=patient.patient_id, report_id=report.report_id, method="extractive")
+        turn.step("tool:summarize_report", t, patient_id=patient.patient_id, report_id=report.report_id,
+                  method="extractive")
         turn.session.active_report_id = report.report_id
         self._audit(turn, "summarize_report", patient_id=patient.patient_id, report_id=report.report_id)
         return self._respond(
@@ -470,7 +493,8 @@ class Assistant:
         self._audit(turn, "create_draft", patient_id=patient.patient_id if patient else None, draft_id=draft.draft_id)
         n_review = sum(f.needs_review for f in findings)
         msg = (f"Draft {draft.draft_id} created with {len(findings)} finding(s)"
-               + (f", {n_review} flagged for review" if n_review else "") + ". Clinician review is required before use.")
+               + (f", {n_review} flagged for review" if n_review else "")
+               + ". Clinician review is required before use.")
         return self._respond(
             turn, "draft_report", msg, data=draft.model_dump(mode="json"),
             evidence=[Evidence(source="transcript", quote=f.evidence, finding_ids=[f.finding_id]) for f in findings],
@@ -487,5 +511,5 @@ class Assistant:
 
     def _audit(self, turn: Turn, action: str, **ids: Any) -> None:
         # ids only: no transcript text or clinical content in the audit trail
-        audit_log.info(json.dumps({"ts": datetime.now(timezone.utc).isoformat(), "clinician": turn.clinician.clinician_id,
+        audit_log.info(json.dumps({"ts": datetime.now(UTC).isoformat(), "clinician": turn.clinician.clinician_id,
                                    "session": turn.session.session_id, "action": action, **ids}))

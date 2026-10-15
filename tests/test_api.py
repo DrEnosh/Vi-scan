@@ -33,7 +33,8 @@ def test_input_validation(client):
 
 
 def test_unknown_clinician_is_rejected(client):
-    r = client.post("/api/assistant/message", json={"text": "Open Priya Sharma's OPG"}, headers={"X-Clinician-Id": "intruder"})
+    r = client.post("/api/assistant/message", json={"text": "Open Priya Sharma's OPG"},
+                    headers={"X-Clinician-Id": "intruder"})
     assert r.status_code == 401
 
 

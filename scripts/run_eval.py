@@ -275,7 +275,8 @@ def print_report(s: dict[str, Any], results: list[Result], engine: str, markdown
         rows.append(("Model call latency, median / p90", f"{lat['median']} / {lat['p90']} ms"))
         rows.append(("Tokens per call (mean)", str(s["tokens_per_call"])))
         rows.append(("Calls that fell back to the rules", str(s["fallbacks"])))
-    title = f"Interpreter: {engine}  |  {s['cases']} cases ({s['conversation']} conversation, {s['dictation']} dictation)"
+    title = (f"Interpreter: {engine}  |  {s['cases']} cases "
+             f"({s['conversation']} conversation, {s['dictation']} dictation)")
     if markdown:
         print(f"**{title}**\n\n| Measure | Result |\n|---|---|")
         for k, v in rows:

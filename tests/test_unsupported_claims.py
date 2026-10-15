@@ -121,7 +121,8 @@ def test_duplicate_llm_findings_are_merged(llm_app, llm_say):
     category for the same tooth ("radiolucency" next to "periapical radiolucency") is dropped."""
     text = "No caries on 46. Possible periapical radiolucency in relation to 36."
     client, _ = llm_app(tool_name="draft_findings", tool_input={"findings": [
-        {"category": "caries", "tooth_fdi": "46", "present": False, "certainty": "stated", "evidence": "No caries on 46"},
+        {"category": "caries", "tooth_fdi": "46", "present": False, "certainty": "stated",
+         "evidence": "No caries on 46"},
         {"category": "caries", "tooth_fdi": "46", "present": True, "certainty": "stated", "evidence": "caries on 46"},
         {"category": "periapical", "tooth_fdi": "36", "present": True, "certainty": "stated",
          "evidence": "periapical radiolucency in relation to 36"},

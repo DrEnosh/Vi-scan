@@ -244,7 +244,8 @@ def answer_question(question: str, report: Report, other_reports: list[Report]) 
             others = [r.report_id for r in other_reports if r.report_id != report.report_id and any(
                 (not cats or f.category in cats) and (not teeth or f.site in teeth) for f in r.findings)]
             if others:
-                lines.append(f"Other reports on file that mention it: {', '.join(others)}. Ask me to open one to review it.")
+                lines.append(f"Other reports on file that mention it: {', '.join(others)}. "
+                             "Ask me to open one to review it.")
     return {"type": "answer", "message": "\n".join(lines), "finding_ids": [f.id for f in matched], "fields": fields}
 
 

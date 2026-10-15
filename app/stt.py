@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol
 
 ALLOWED_AUDIO_TYPES = {"audio/wav", "audio/x-wav", "audio/wave", "audio/mpeg", "audio/mp3", "audio/mp4", "audio/m4a",
                        "audio/x-m4a", "audio/webm", "audio/ogg", "video/webm", "application/octet-stream"}
@@ -92,8 +92,8 @@ class OpenAICompatSTT:
     def transcribe_with_meta(self, audio: bytes, filename: str, content_type: str) -> tuple[str, dict]:
         verbose = "whisper" in self.model.lower()
         try:
-            kwargs = dict(model=self.model, file=(filename or "audio.webm", audio, content_type),
-                          language="en", prompt=DENTAL_PROMPT, temperature=0)
+            kwargs: dict[str, Any] = {"model": self.model, "file": (filename or "audio.webm", audio, content_type),
+                                      "language": "en", "prompt": DENTAL_PROMPT, "temperature": 0}
             if verbose:
                 kwargs["response_format"] = "verbose_json"
             result = self.client.audio.transcriptions.create(**kwargs)  # type: ignore[attr-defined]
@@ -126,7 +126,8 @@ class OpenAICompatSTT:
 
 def build_stt(provider: str, fixtures_path: Path, api_key: str | None, model: str) -> STTProvider:
     if provider == "groq":
-        return OpenAICompatSTT(api_key, model or "whisper-large-v3-turbo", "https://api.groq.com/openai/v1", name="groq")
+        return OpenAICompatSTT(api_key, model or "whisper-large-v3-turbo", "https://api.groq.com/openai/v1",
+                               name="groq")
     if provider == "openai":
         return OpenAICompatSTT(api_key, model or "whisper-1", None, name="openai")
     return MockSTT(fixtures_path)

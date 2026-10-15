@@ -2,6 +2,8 @@
 
 Output of `run_check.bat` on Windows (Python 3.14) with `INTERPRETER=groq` and `STT_PROVIDER=groq`, 13 October 2026. Model `openai/gpt-oss-120b` for interpretation and `whisper-large-v3-turbo` for speech, both on Groq's free tier. All patient data is synthetic.
 
+**Re-run on 15 October 2026** on the final code (commit `68e754c`): same outcome. 9 of 9 tool calls correct, the silent clip rejected, 4 of 4 live API tests passed, and all 62 offline tests passing on Windows. Model calls took 607–1,255 ms and Whisper 317–386 ms. The log below is the original 13 October run.
+
 What it shows:
 
 - **[1/3]** one direct tool call to confirm the key, model and tool calling.

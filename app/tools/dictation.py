@@ -213,6 +213,11 @@ def dedupe_findings(findings: list[DraftFinding]) -> list[DraftFinding]:
             for q in f.qualifiers:
                 if q not in kept.qualifiers:
                     kept.qualifiers.append(q)
+            if f.certainty == "uncertain" and kept.certainty != "uncertain":  # keep the more cautious reading
+                kept.certainty, kept.certainty_cue = "uncertain", f.certainty_cue
+            if f.needs_review:
+                kept.needs_review = True
+                kept.review_reasons += [r for r in f.review_reasons if r not in kept.review_reasons]
             kept.statement = finding_statement(kept)
             continue
         index[key] = f

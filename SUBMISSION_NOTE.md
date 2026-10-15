@@ -2,7 +2,7 @@
 
 **Candidate:** Dr. Enosh A Paulson
 **Role:** AI Engineer, VI-SCAN Diagnostics
-**Contents:** source code with mock data, README, architecture document (`docs/architecture.pdf`: a one-page overview plus two appendix pages; the overview is also in `docs/ARCHITECTURE.md`), documented API calls with real outputs (`docs/DEMO.md`, offline and reproducible), a live run against Groq (`docs/LIVE_RUN.md`), 60 automated tests plus 4 live API tests.
+**Contents:** source code with mock data, README, architecture document (`docs/architecture.pdf`: a one-page overview plus two appendix pages; the overview is also in `docs/ARCHITECTURE.md`), documented API calls with real outputs (`docs/DEMO.md`, offline and reproducible), a live run against Groq (`docs/LIVE_RUN.md`), 62 automated tests plus 4 live API tests.
 
 ## What works
 
@@ -19,6 +19,8 @@
 Running against the real APIs exposed five problems that the scripted tests had not: Groq rejecting `null` tool arguments, Whisper transcribing silence as "Thank you.", the free-tier tokens-per-minute limit, the model missing one dictated finding, and the model once dropping a spoken patient name. Each now has a fix and a regression test; details are in the README under "What live testing caught".
 
 A final check from a clean clone found two more. Following the Quick start exactly, one test needed the optional provider package, and the offline interpreter read some question words as patient names ("Does she have a tumour?" came back as "no patient named Tumour"). Both are fixed, with regression tests.
+
+An adversarial pass with a scripted model then showed that a patient name or ID returned by the model was trusted even when nobody had said it. The patient now has to come from the utterance, and duplicate model findings are merged. Both have regression tests.
 
 ## What is incomplete
 

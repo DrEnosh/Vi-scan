@@ -18,7 +18,7 @@ All data in this repository is synthetic.
 | Bonus: report-aware Q&A | Done: grounded in the selected report; says when something isn't documented | `answer_question` |
 | Tool calling, LLM separated from business rules | Done: Groq (`openai/gpt-oss-120b`) tool calling, or any OpenAI-compatible API; schema validation, grounding validator and identity rules in code | `app/interpreter/`, `app/validation.py` |
 | Voice input | Done: the mic records audio and sends it to Whisper (`whisper-large-v3-turbo` on Groq) with a no-speech guard | `static/index.html`, `app/stt.py` |
-| Tests | 60 automated tests, plus 4 opt-in live tests against the real APIs (passing) | `tests/` |
+| Tests | 62 automated tests, plus 4 opt-in live tests against the real APIs (passing) | `tests/` |
 
 ## Quick start (no keys needed)
 
@@ -45,7 +45,7 @@ Things to try, in order, in one session:
 Run the tests and regenerate the offline demo log:
 
 ```bash
-pytest                            # 60 passed, 4 skipped (the live API tests)
+pytest                            # 62 passed, 4 skipped (the live API tests)
 python scripts/run_demo.py        # writes docs/DEMO.md from real responses
 ```
 
@@ -130,7 +130,7 @@ Measured with `run_check.bat` against Groq's free tier (full log in `docs/LIVE_R
 
 1. **Identity is never guessed.** First name only with two matches → the assistant asks. A fuzzy match ("Pria Sharma") → asks for confirmation. Exact matches still carry a look-alike name alert (Priya Sharma / Priya Shetty, Ananya Rao / Anaya Rao) with patient ID and age as the second identifier.
 2. **Pronouns must fit, and spoken names win.** "Summarize his report" while a female patient is open is questioned, not executed. If a patient's name was spoken, session context is never used in its place, and a name that matches nobody is never swapped for the open patient without a yes ("Does Kavya have caries?" → "Did you mean Priya Sharma (P001), who is open now?").
-3. **Every LLM output is validated before it acts.** Tool arguments are schema-checked; an invalid call is re-interpreted by the rules instead of executed.
+3. **Every LLM output is validated before it acts.** Tool arguments are schema-checked; an invalid call is re-interpreted by the rules instead of executed. The patient must come from what was said: a name or patient ID the model returns that isn't in the utterance is discarded, so a model slip can't open someone else's report.
 4. **Every LLM finding is grounded.** It survives only if its quoted evidence is in the transcript, that evidence mentions the claimed finding, the tooth agrees with what was said, and negation matches the wording. Qualifiers that were never spoken, or that describe a different finding, are dropped. Rejections are returned to the clinician with reasons.
 5. **Unrecognised speech is kept, not interpreted.** "Patient is anxious about the procedure" goes into `unparsed_segments` verbatim.
 6. **Unspecified sides stay unspecified.** "Lower third molar is impacted" becomes "could be 38 / 48" and blocks approval until a tooth is picked.
@@ -204,7 +204,7 @@ app/
   repository.py         clinic-scoped data access over the JSON mock data
   data/                 synthetic patients, reports, clinicians, mock STT fixtures
 static/index.html       single-page UI (mic recording, chat, evidence panel, draft editor)
-tests/                  60 tests + 4 opt-in live API tests
+tests/                  62 tests + 4 opt-in live API tests
 scripts/run_demo.py     generates docs/DEMO.md (offline)
 scripts/check_llm.py    live check of the key, model, latency, STT and real speech
 start.bat               one-click start on Windows

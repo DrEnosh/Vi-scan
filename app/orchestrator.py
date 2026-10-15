@@ -20,13 +20,13 @@ from typing import Any
 
 from .interpreter import InterpretContext, RuleBasedInterpreter, ToolCall
 from .interpreter.rule_based import (
-    PRONOUN_F, PRONOUN_M, extract_name, first_pronoun, looks_like_command, looks_like_dictation,
+    PATIENT_ID_RE, PRONOUN_F, PRONOUN_M, extract_name, first_pronoun, looks_like_command, looks_like_dictation,
 )
 from .interpreter.schema import DraftArgs, PatientRefArgs, QuestionArgs, ReportQueryArgs, UnsupportedArgs
 from .models import MODALITY_LABELS, AssistantResponse, Clinician, DraftReport, Evidence, Patient, Report, TraceStep
 from .repository import Repository
 from .session import DraftStore, PendingClarification, Session, SessionStore
-from .tools.dictation import build_draft_text, merge_missing, parse_dictation
+from .tools.dictation import build_draft_text, dedupe_findings, merge_missing, parse_dictation
 from .tools.retrieval import (
     answer_question, match_patients, parse_date_filter, report_listing, select_report, similar_names,
     summarize_report,
@@ -42,8 +42,15 @@ REPORT_TOOLS = {"open_report", "summarize_report", "answer_report_question"}
 CANCEL_RE = re.compile(r"^\s*(?:no|nope|cancel|neither|none(?:\s+of\s+them)?|stop|never\s*mind|forget\s+it)\W*$", re.I)
 YES_RE = re.compile(r"^\s*(?:yes|yeah|yep|yup|correct|right|that'?s\s+(?:right|correct|the\s+one)|that\s+one|confirm(?:ed)?|"
                     r"ok(?:ay)?|sure)\b", re.I)
+HONORIFICS = {"mr", "mrs", "ms", "miss", "master", "madam", "sir", "dr", "doctor"}
 ORDINALS = [("first", 0), ("1st", 0), ("second", 1), ("2nd", 1), ("third", 2), ("3rd", 2), ("fourth", 3), ("4th", 3),
             ("last", -1)]
+
+
+def _name_tokens(text: str) -> list[str]:
+    """Lower-case name words of a text, without possessives or honorifics."""
+    words = re.findall(r"[a-z]+(?:'[a-z]+)?", text.lower().replace("’", "'"))
+    return [w for w in (re.sub(r"'s?$", "", w) for w in words) if w and w not in HONORIFICS]
 
 
 @dataclass
@@ -93,6 +100,7 @@ class Assistant:
             try:
                 call = self.interpreter.interpret(turn.text, ictx, mode)
                 turn.step("interpret", t, engine=self.interpreter.name, tool=call.name, args=call.args, usage=call.usage)
+                call = self._ground_llm_identity(call, turn, ictx)
                 return self._cross_check_name(call, turn, ictx)
             except Exception as e:  # network error, timeout, bad output: degrade, don't fail the clinician
                 turn.step("interpret_fallback", t, engine=self.interpreter.name, error=type(e).__name__,
@@ -122,6 +130,32 @@ class Assistant:
                   note="words after the pronoun match no patient; read as part of the request, not as a name")
         args = {k: v for k, v in call.args.items() if k != "patient_name"}
         args["patient_reference"] = ref
+        return ToolCall(name=call.name, args=args, source=call.source, usage=call.usage)
+
+    def _ground_llm_identity(self, call: ToolCall, turn: Turn, ictx: InterpretContext) -> ToolCall:
+        """The patient must come from what was said. A name or patient ID the model returns that is not in
+        the utterance is discarded; the spoken name (or ID) takes its place, otherwise the pronoun, otherwise
+        nothing (so the assistant asks). A model's "corrected" spelling never skips the confirmation step."""
+        name, pid = call.args.get("patient_name"), call.args.get("patient_id")
+        if call.name not in REPORT_TOOLS or not (name or pid):
+            return call
+        spoken_ids = {f"P{m['num']}" for m in PATIENT_ID_RE.finditer(turn.text)}
+        spoken_words = set(_name_tokens(turn.text))
+        id_ok = not pid or str(pid).strip().upper() in spoken_ids
+        name_ok = not name or set(_name_tokens(str(name))) <= spoken_words
+        if id_ok and name_ok:
+            return call
+        spoken = self.rules.interpret(turn.text, ictx, "command").args
+        args = {k: v for k, v in call.args.items() if k not in ("patient_name", "patient_id")}
+        if spoken.get("patient_id") or spoken.get("patient_name"):
+            args.update({k: spoken[k] for k in ("patient_id", "patient_name") if spoken.get(k)})
+            args["patient_reference"] = "named"
+        else:
+            pron = first_pronoun(turn.text)
+            args["patient_reference"] = pron[0] if pron else "none"
+        turn.step("identity_check", llm_patient_name=name, llm_patient_id=pid,
+                  using=args.get("patient_id") or args.get("patient_name") or args["patient_reference"],
+                  note="the model returned a patient that was not said; using what the clinician said")
         return ToolCall(name=call.name, args=args, source=call.source, usage=call.usage)
 
     def _cross_check_name(self, call: ToolCall, turn: Turn, ictx: InterpretContext) -> ToolCall:
@@ -399,6 +433,7 @@ class Assistant:
         added_from_rules = 0
         if call.source == "llm" and args.findings is not None:
             findings, rejected = ground_llm_findings(turn.text, args.findings)
+            findings = dedupe_findings(findings)
             findings, added_from_rules = merge_missing(findings, rule.findings)
             engine = "llm+grounding" + ("+rules" if added_from_rules else "")
         else:

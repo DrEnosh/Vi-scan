@@ -114,3 +114,19 @@ def test_spoken_tooth_numbers_from_stt(say):
             "Patient is twenty years old.", mode="dictation")["data"]
     got = {(f["category"], f["site"]["fdi"], f["present"]) for f in d["findings"]}
     assert got == {("impaction", "48", True), ("periapical", "36", False)}
+
+
+def test_duplicate_llm_findings_are_merged(llm_app, llm_say):
+    """Two proposals for the same finding become one line, and the cautious reading wins."""
+    text = "No caries on 46. Possible periapical radiolucency in relation to 36."
+    client, _ = llm_app(tool_name="draft_findings", tool_input={"findings": [
+        {"category": "caries", "tooth_fdi": "46", "present": False, "certainty": "stated", "evidence": "No caries on 46"},
+        {"category": "caries", "tooth_fdi": "46", "present": True, "certainty": "stated", "evidence": "caries on 46"},
+        {"category": "periapical", "tooth_fdi": "36", "present": True, "certainty": "stated",
+         "evidence": "periapical radiolucency in relation to 36"},
+        {"category": "periapical", "tooth_fdi": "36", "present": True, "certainty": "uncertain",
+         "evidence": "Possible periapical radiolucency in relation to 36"}]})
+    d = llm_say(client)(text)["data"]
+    got = [(f["category"], f["site"]["fdi"], f["present"], f["certainty"]) for f in d["findings"]]
+    assert got == [("caries", "46", False, "stated"), ("periapical", "36", True, "uncertain")]
+    assert d["draft_text"].count("Caries") + d["draft_text"].count("caries") == 1

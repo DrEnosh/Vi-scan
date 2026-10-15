@@ -1,2 +1,2 @@
 # Optional: only needed for INTERPRETER=groq/openai_compat or STT_PROVIDER=groq/openai
-openai>=1.30
+openai==3.29.0

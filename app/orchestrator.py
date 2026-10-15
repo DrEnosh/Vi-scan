@@ -20,7 +20,7 @@ from typing import Any
 
 from .interpreter import InterpretContext, RuleBasedInterpreter, ToolCall
 from .interpreter.rule_based import (
-    PATIENT_ID_RE, PRONOUN_F, PRONOUN_M, extract_name, first_pronoun, looks_like_command, looks_like_dictation,
+    PATIENT_ID_RE, PRONOUN_F, PRONOUN_M, find_name, first_pronoun, looks_like_command, looks_like_dictation,
 )
 from .interpreter.schema import DraftArgs, PatientRefArgs, QuestionArgs, ReportQueryArgs, UnsupportedArgs
 from .models import MODALITY_LABELS, AssistantResponse, Clinician, DraftReport, Evidence, Patient, Report, TraceStep
@@ -106,13 +106,13 @@ class Assistant:
                 turn.step("interpret_fallback", t, engine=self.interpreter.name, error=type(e).__name__,
                           note="LLM unavailable or returned no usable tool call; using rule-based interpreter")
                 t = time.perf_counter()
-        call = self.rules.interpret(turn.text, ictx, mode)
+        call = self.rules.interpret(turn.text, ictx, mode, self._names(turn))
         turn.step("interpret", t, engine="rule_based", tool=call.name, args=call.args)
         return self._check_rule_name(call, turn)
 
     def _check_rule_name(self, call: ToolCall, turn: Turn) -> ToolCall:
-        """The rules treat leftover words as a name, so "Does she have a tumour?" yields "tumour".
-        When those words come after a pronoun and match no patient in scope, they are part of the
+        """A capitalised word can still look like a name to the rules ("Does she have Leukoplakia?").
+        When such words come after a pronoun and match no patient in scope, they are part of the
         question and the pronoun is the reference. Anything that matches a patient is kept: names win."""
         name = call.args.get("patient_name")
         if call.name not in REPORT_TOOLS or not name or call.args.get("patient_id"):
@@ -145,7 +145,7 @@ class Assistant:
         name_ok = not name or set(_name_tokens(str(name))) <= spoken_words
         if id_ok and name_ok:
             return call
-        spoken = self.rules.interpret(turn.text, ictx, "command").args
+        spoken = self.rules.interpret(turn.text, ictx, "command", self._names(turn)).args
         args = {k: v for k, v in call.args.items() if k not in ("patient_name", "patient_id")}
         if spoken.get("patient_id") or spoken.get("patient_name"):
             args.update({k: spoken[k] for k in ("patient_id", "patient_name") if spoken.get(k)})
@@ -163,7 +163,7 @@ class Assistant:
         use the spoken name. Falling back to session context there could open the wrong patient."""
         if call.name not in REPORT_TOOLS or call.args.get("patient_name") or call.args.get("patient_id"):
             return call
-        spoken = self.rules.interpret(turn.text, ictx, "command").args
+        spoken = self.rules.interpret(turn.text, ictx, "command", self._names(turn)).args
         name, pid = spoken.get("patient_name"), spoken.get("patient_id")
         if not (name or pid):
             return call
@@ -182,7 +182,7 @@ class Assistant:
         except ToolCallInvalid as e:
             turn.step("validate", t, ok=False, error=str(e))
             if call.source == "llm":  # re-interpret deterministically rather than act on a bad call
-                fallback = self.rules.interpret(turn.text, InterpretContext(), "auto")
+                fallback = self.rules.interpret(turn.text, InterpretContext(), "auto", self._names(turn))
                 turn.step("interpret", engine="rule_based", tool=fallback.name, args=fallback.args, reason="llm_call_invalid")
                 return self._execute(self._check_rule_name(fallback, turn), turn)
             return self._unsupported(turn, f"I couldn't act on that request ({e}).")
@@ -201,6 +201,10 @@ class Assistant:
                                        "or turn dictation into a draft report." + (f" ({reason})" if reason else ""))
 
     # ================================================================== patient resolution
+    def _names(self, turn: Turn) -> list[str]:
+        """The clinician's patient names, for the local rules only (never sent to the model)."""
+        return [p.name for p in self.repo.patients_for(turn.clinician)]
+
     def _active_patient(self, turn: Turn) -> Patient | None:
         pid = turn.session.active_patient_id
         return self.repo.get_patient(pid, turn.clinician) if pid else None
@@ -316,7 +320,7 @@ class Assistant:
             if chosen is None and len(cands) == 1 and YES_RE.match(text):
                 chosen, how = cands[0], "confirmed"
         if chosen is None:
-            name = extract_name(text)
+            name = find_name(text, [p.name for p in accessible], bare=True)
             if name:
                 pool = cands or accessible
                 m2 = match_patients(name, pool)

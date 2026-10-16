@@ -166,6 +166,8 @@ def check(case: dict[str, Any], resp: AssistantResponse) -> tuple[list[str], Cou
     if resp.type == "draft_report":
         counts, fp = score_findings(exp.get("findings", []), (resp.data or {}).get("findings", []))
         return problems + fp, counts
+    if exp.get("findings"):  # dictation that produced no draft: every finding said was missed
+        return problems, Counter(fn=len(exp["findings"]))
     pid, rid = _patient(resp), _report(resp)
     if exp.get("patient") and pid != exp["patient"]:
         problems.append(f"patient: got {pid}, expected {exp['patient']}")

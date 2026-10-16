@@ -18,9 +18,10 @@ The design rule is safety before fluency. The LLM only proposes a tool call; pla
 
 | Check | Result |
 |---|---|
-| Automated tests | 89 passing on Python 3.11 to 3.14, plus 4 live API tests run on demand |
+| Automated tests | 90 passing on Python 3.11 to 3.14, plus 4 live API tests run on demand |
 | Evaluation set: 134 labelled utterances, offline rules | 96% right action, 97% right patient, dictated findings F1 0.97 |
-| Replies that showed the wrong patient's report | 0 (CI fails the build if this is ever not 0) |
+| Same set, live model (Groq `gpt-oss-120b`) | 92% right action, 86% right patient, findings F1 0.96, median 764 ms per call |
+| Replies that showed the wrong patient's report | 0 offline (CI fails the build otherwise). The first live run found 1; fixed, and the re-run shows 0 |
 | Live run on Groq (`gpt-oss-120b` + Whisper) | 9 of 9 correct tool choices; a spoken command takes about 1.3 s on the server, audio to answer |
 
 How these were measured, and every case that failed: [docs/EVAL.md](docs/EVAL.md).
@@ -51,7 +52,7 @@ Things to try, in order, in one session:
 Tests, lint and the evaluation:
 
 ```bash
-pytest                       # 89 passed, 4 skipped (the live API tests)
+pytest                       # 90 passed, 4 skipped (the live API tests)
 ruff check .
 python scripts/run_eval.py   # scores eval/cases.jsonl
 ```

@@ -2,7 +2,7 @@
 
 **Candidate:** Dr. Enosh A Paulson
 **Role:** AI Engineer, VI-SCAN Diagnostics
-**Contents:** source code with mock data, README, a one-page architecture document (`docs/architecture.pdf`, also as `docs/ARCHITECTURE.md`, with a two-page appendix in `docs/architecture-appendix.pdf`), documented API calls with real outputs (`docs/DEMO.md`, offline and reproducible), a live run against Groq (`docs/LIVE_RUN.md`), 89 automated tests plus 4 live API tests, a 134-case evaluation set with results (`docs/EVAL.md`), and CI on GitHub Actions.
+**Contents:** source code with mock data, README, a one-page architecture document (`docs/architecture.pdf`, also as `docs/ARCHITECTURE.md`, with a two-page appendix in `docs/architecture-appendix.pdf`), documented API calls with real outputs (`docs/DEMO.md`, offline and reproducible), a live run against Groq (`docs/LIVE_RUN.md`), 90 automated tests plus 4 live API tests, a 134-case evaluation set with results (`docs/EVAL.md`), and CI on GitHub Actions.
 
 ## What works
 
@@ -12,7 +12,7 @@
 - **Tool calling with a clear boundary.** The LLM (Groq `openai/gpt-oss-120b`, or any OpenAI-compatible API by config) picks one of three tools; Pydantic validation and deterministic tools decide identity, scope and evidence. LLM-proposed findings must pass a grounding check against the transcript, and rejected ones are shown with reasons. A rule-based interpreter emits the same tool calls, so everything runs offline and the LLM has a fallback.
 - **Voice.** The mic in the web UI records audio and sends it to Whisper (`whisper-large-v3-turbo` on Groq) with a dental-terms prompt and a guard against Whisper's silence hallucinations.
 - **Verified live.** On Groq's free tier: correct tool choice on every test utterance, about 1 s per interpreter call and 350–480 ms per transcription, and all 4 live API tests passing.
-- **Measured.** On a labelled set of 134 utterances the offline interpreter takes the right action in 96% of conversation turns and finds dictated findings with F1 0.97, and no reply shows a report for the wrong patient (CI fails if one ever does). Every failed case is listed in `docs/EVAL.md`.
+- **Measured.** On a labelled set of 134 utterances the offline interpreter takes the right action in 96% of conversation turns and finds dictated findings with F1 0.97; the live model takes the right action in 92% with findings F1 0.96. The first live run found one reply that answered for the wrong patient; it is fixed, with a regression test, and the re-run had none. Every failed case is listed in `docs/EVAL.md`.
 - **Production basics.** Input limits, clean error responses, clinic-scoped authorization, sessions bound to a clinician, an ID-only audit log, per-step latency in every response, and a cost note.
 
 ## What testing changed

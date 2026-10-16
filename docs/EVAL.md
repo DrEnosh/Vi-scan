@@ -55,7 +55,46 @@ These are phrasing gaps in the offline fallback, which the LLM is there to cover
 
 ## Results: live model
 
-The same set can be run against the live model with `--interpreter groq`. Earlier live runs on 13 and 15 October (`docs/LIVE_RUN.md`) got 9 of 9 tool choices right, at about 1 s per call.
+The same 134 cases through Groq `openai/gpt-oss-120b`, run on a Windows laptop with `--interpreter groq` on 16 October. Every reply still goes through the same validation and deterministic tools; only the interpreter changes.
+
+| Measure | Offline rules | Live model |
+|---|---|---|
+| Cases fully correct | 127 / 134 | 120 / 134 |
+| Right action (open, summarize, answer, ask, refuse) | 86 / 90 (96%) | 83 / 90 (92%) |
+| Right patient, when one was named or open | 61 / 63 (97%) | 54 / 63 (86%) |
+| Right report | 53 / 56 (95%) | 48 / 56 (86%) |
+| Asked or stopped when the patient was unclear | 12 / 12 | 12 / 12 |
+| Refused out-of-scope requests | 11 / 13 (85%) | 13 / 13 (100%) |
+| Report shown for the wrong patient | 0 | 0 |
+| Dictated findings: recall / precision / F1 | 0.98 / 0.96 / 0.97 | 0.96 / 0.95 / 0.96 |
+| Model call latency, median / p90 | | 764 / 1204 ms |
+| Tokens per call (mean) | | 972 |
+| Calls that fell back to the rules | | 0 |
+
+**What the first live run caught.** The first live run, on the evening of 15 October, had one reply that answered for the wrong patient: with Priya Sharma open, "Does Kavya have caries?" was answered from Priya's report. There is no Kavya in the clinic; the model left the name out of its tool call, and the check that restores a dropped name skipped names that match nobody, so the question fell through to the open patient. The spoken name now always wins, so the assistant says it has no patient called Kavya and asks; a regression test replays the model's output. The table above is the run after the fix.
+
+**Where the two differ.** The model handles free phrasing the rules miss ("I need the most recent scan we have on file for Fatima Khan", "Change her diagnosis to caries" refused instead of drafted). It is also more cautious than it needs to be: it refused several follow-ups that the report can answer ("Does she need an extraction?", "What are the key findings?"). A refusal is safe but unhelpful; the fix would be a line in the system prompt saying that questions about what the report says are always in scope, with the rules as a second opinion.
+
+The cases the live model got wrong:
+
+| Case | Utterance | What happened |
+|---|---|---|
+| R18 | "What does Arjun Nair's OPG show?" | action: got unsupported, expected summary/report |
+| F07 | "Show me her previous OPG" | report: got R-1003, expected R-1001 |
+| F10 | "Does she have oral cancer?" | patient: got None, expected P001 |
+| F12 | "Is she healthy?" | patient: got None, expected P001 |
+| F13 | "Does she need an extraction?" | action: got unsupported, expected answer; patient: got None, expected P001; report: got None, expected R-1003 |
+| F14 | "Is there anything concerning in her report?" | action: got unsupported, expected summary |
+| F15 | "What are the key findings?" | action: got unsupported, expected summary |
+| F20 | "Read me the impression" | action: got summary, expected answer |
+| F23 | "Should we extract 48?" | action: got unsupported, expected answer; patient: got None, expected P001; report: got None, expected R-1003 |
+| F24 | "And the one before that?" | action: got unsupported, expected report; report: got R-1003, expected ['R-1001', 'R-1002'] |
+| D13 | "Retained deciduous 75 with the successor 35 unerupted." | added retained_deciduous @ 35 (not dictated); added unerupted @ 75 (not dictated) |
+| D19 | "Crown on 21 with no periapical changes." | missed crown @ 21 |
+| D34 | "Query root fracture of 21." | action: got clarification, expected draft_report |
+| D39 | "Caries on 36 but no periapical lesion." | added periapical @ None (not dictated) |
+
+The model is not fully repeatable at temperature 0.1: between the two live runs, three cases changed between right and wrong with no code change (R18, F07, F10). F16 changed because of the fix.
 
 ## Limits of this evaluation
 

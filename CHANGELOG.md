@@ -2,6 +2,10 @@
 
 What changed and why, day by day. The assignment arrived on 13 October 2026.
 
+## 16 October, morning
+
+- **Live evaluation.** Ran the 134 cases against Groq `gpt-oss-120b`. The first run (the evening before) had one reply that answered for the wrong patient: "Does Kavya have caries?" with Priya open, after the model dropped a name that matches nobody in the clinic. The spoken name now always wins, with a regression test. The re-run: 120 of 134 fully correct and 0 wrong-patient replies. Live results are in `docs/EVAL.md`.
+
 ## 15 October, evening
 
 Reviewing the repository as an outsider would showed four weak spots: no way to measure accuracy, an offline name finder built on a long list of words to ignore, lint noise, and a README that was hard to scan.

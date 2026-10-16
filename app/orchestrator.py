@@ -173,14 +173,14 @@ class Assistant:
 
     def _cross_check_name(self, call: ToolCall, turn: Turn, ictx: InterpretContext) -> ToolCall:
         """If a patient name was spoken but the LLM returned none (e.g. read "Priya's" as a pronoun),
-        use the spoken name. Falling back to session context there could open the wrong patient."""
+        use the spoken name. Falling back to session context there could open the wrong patient. This
+        holds for a name that matches nobody too ("Does Kavya have caries?" while Priya is open): the
+        assistant then says it found no such patient, instead of answering for the one who is open."""
         if call.name not in REPORT_TOOLS or call.args.get("patient_name") or call.args.get("patient_id"):
             return call
         spoken = self.rules.interpret(turn.text, ictx, "command", self._names(turn)).args
         name, pid = spoken.get("patient_name"), spoken.get("patient_id")
         if not (name or pid):
-            return call
-        if name and match_patients(str(name), self.repo.patients_for(turn.clinician)).status == "not_found":
             return call
         turn.step("name_cross_check", llm_reference=call.args.get("patient_reference"), spoken=name or pid,
                   note="LLM returned no patient name although one was spoken; using the spoken name")

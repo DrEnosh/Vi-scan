@@ -284,6 +284,21 @@ def test_dropped_name_cannot_open_the_wrong_patient():
     assert r["data"]["patient"]["patient_id"] == "P004" and r["data"]["report"]["report_id"] == "R-4001"
 
 
+def test_unknown_spoken_name_is_not_answered_for_the_open_patient():
+    """Live evaluation (case F16): with Priya open, the model dropped the unknown name in "Does Kavya have
+    caries?" and the reply answered for Priya. The spoken name must be used even when it matches nobody."""
+    say = lambda c, text, sid=None: c.post("/api/assistant/message", json={"text": text, "session_id": sid}).json()  # noqa: E731
+    interp = groq(FakeChat("report_request", {"action": "open", "patient_name": "Priya Sharma",
+                                              "patient_reference": "named", "modality": "OPG", "which": "latest"}))
+    client = TestClient(create_app(Settings(), interpreter=interp))
+    sid = say(client, "Open Priya Sharma's latest OPG")["session_id"]
+    interp.client = FakeChat("report_request", {"action": "question", "patient_reference": "none",
+                                                "question": "Does Kavya have caries?"})   # model drops "Kavya"
+    r = say(client, "Does Kavya have caries?", sid)
+    assert r["type"] == "clarification" and "Kavya" in r["message"]
+    assert any(s["step"] == "name_cross_check" for s in r["trace"])
+
+
 def test_qualifier_wording_is_canonicalised():
     fake = FakeChat("draft_findings", {"findings": [
         {"category": "impaction", "qualifiers": ["horizontally"], "tooth_fdi": "48", "present": True,

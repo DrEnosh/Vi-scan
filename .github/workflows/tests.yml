@@ -1,0 +1,28 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install
+        run: pip install -r requirements.txt -r requirements-providers.txt ruff==0.17.1
+      - name: Lint
+        run: ruff check .
+      - name: Tests (offline; the live API tests run only with RUN_LIVE=1)
+        run: pytest
+      - name: Evaluation set (fails if any reply shows a report for the wrong patient)
+        run: python scripts/run_eval.py

@@ -26,7 +26,7 @@ The design rule is safety before fluency. The LLM only proposes a tool call; pla
 
 How these were measured, and every case that failed: [docs/EVAL.md](docs/EVAL.md).
 
-## Try it (no keys needed)
+## Quick start (no keys needed)
 
 Python 3.11 or newer.
 
@@ -68,6 +68,35 @@ One free key from console.groq.com covers both the LLM and Whisper.
 
 On Windows, `run_check.bat` does all of this in one go and writes `check_output.txt`; `docs/LIVE_RUN.md` is its output on my machine. If the LLM is unreachable or returns something unusable, that request falls back to the rules immediately and the UI says so.
 
+## Model and provider choices
+
+- **LLM: `openai/gpt-oss-120b` on Groq**, through OpenAI-compatible tool calling. The job is narrow (pick one of three tools and fill a few arguments), so a fast model with good tool use is enough: free to start, about a second per call, reasoning effort kept low. Any OpenAI-compatible API works by config (`INTERPRETER=openai_compat`).
+- **Speech-to-text: Whisper `whisper-large-v3-turbo` on Groq**, with a dental-terms prompt and a guard against Whisper's silence hallucinations. OpenAI `whisper-1` by config; a mock provider for offline tests.
+- **Rules as a twin.** A rule-based interpreter emits the same tool calls, so everything runs offline and the LLM has a fallback.
+- **Extractive summaries.** Summaries quote the report's own lines with finding IDs instead of generating prose, so every line is traceable.
+
+## Configuration
+
+Environment variables (all of them, with comments, are in [`.env.example`](.env.example)):
+
+```env
+INTERPRETER=groq        # rule_based (default, offline) | groq | openai_compat
+GROQ_API_KEY=           # one free key covers the LLM and Whisper
+STT_PROVIDER=groq       # mock (default) | groq | openai
+LLM_MODEL=              # empty = provider default (Groq: openai/gpt-oss-120b)
+LLM_TIMEOUT_S=8         # after this, the request falls back to the rules
+```
+
+## Production notes
+
+- **Privacy.** The LLM gets the utterance and a one-line context, never the patient list, report text or IDs. The audit log keeps IDs only, no transcript or clinical text. With real patients: a DPA or in-region self-hosting, zero retention, encryption at rest.
+- **Authorization.** Every lookup is scoped to the clinician's clinics; other clinics' patients behave as if they don't exist. Sessions are bound to one clinician and drafts to their author. The header-based login is a stand-in for OIDC tokens and role checks.
+- **Latency.** Measured live: Whisper 350–480 ms, model call about 0.8 s median, tools and validation about 1 ms. A spoken command takes about 1.3 s on the server, audio to answer.
+- **Costs.** Free on Groq's free tier. At paid rates, about $0.0003 per spoken command (roughly $0.30 per 1,000); the offline mode costs nothing.
+- **Failures and input checks.** A failed, slow or invalid model call falls back to the rules at once. Inputs are size-limited and schema-validated, and errors come back as clean JSON with no stack traces.
+
+Details for each: [docs/REFERENCE.md](docs/REFERENCE.md).
+
 ## How it works
 
 ```mermaid
@@ -100,6 +129,7 @@ More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (one page, also as [PD
 - Live testing used clean text-to-speech audio. Real clinic audio with accents and noise still needs evaluating.
 - Sessions and drafts are in memory, and authentication is a header stand-in for real tokens.
 - English only, FDI numbering only.
+- Out of scope by design, as the brief asked: PACS integration, image analysis, deployment and mobile packaging.
 
 ## Repository map
 

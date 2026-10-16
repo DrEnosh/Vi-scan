@@ -2,7 +2,7 @@
 
 **Candidate:** Dr. Enosh A Paulson
 **Role:** AI Engineer, VI-SCAN Diagnostics
-**Contents:** source code with mock data, README, a one-page architecture document (`docs/architecture.pdf`, also as `docs/ARCHITECTURE.md`, with a two-page appendix in `docs/architecture-appendix.pdf`), a 3-minute demo video (`docs/demo.mp4`), documented API calls with real outputs (`docs/DEMO.md`, offline and reproducible), a live run against Groq (`docs/LIVE_RUN.md`), 90 automated tests plus 4 live API tests, a 134-case evaluation set with results (`docs/EVAL.md`), and CI on GitHub Actions.
+**Contents:** source code with mock data, README, a one-page architecture document (`docs/architecture.pdf`, also as `docs/ARCHITECTURE.md`, with a two-page appendix in `docs/architecture-appendix.pdf`), documented API calls with real outputs (`docs/DEMO.md`, offline and reproducible), a live run against Groq (`docs/LIVE_RUN.md`), 90 automated tests plus 4 live API tests, a 134-case evaluation set with results (`docs/EVAL.md`), and CI on GitHub Actions.
 
 ## What works
 

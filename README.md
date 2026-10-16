@@ -6,8 +6,6 @@ A voice-first assistant for a dental imaging workflow, built as a proof of conce
 
 ![Demo: an ambiguous name, a follow-up question and a dictated draft](docs/images/demo.gif)
 
-A 3-minute captioned walkthrough is in [docs/demo.mp4](docs/demo.mp4) (recorded in offline mode, so it needs no API key; the live run is in [docs/LIVE_RUN.md](docs/LIVE_RUN.md)).
-
 ## In short
 
 - **Finds the right report from speech or text**, and asks when a name is ambiguous instead of guessing.
